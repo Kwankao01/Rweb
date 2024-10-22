@@ -6,17 +6,24 @@
     <title>Route Ready</title>
     <style>
 
+        .header {
+            margin-left: 20px;
+            margin-top: 10px;
+            display: flex; /* ใช้ flexbox เพื่อให้โลโก้และข้อความอยู่ในบรรทัดเดียวกัน */
+            align-items: center; /* จัดแนวให้กลางในแนวตั้ง */
+            margin-bottom: 10px; /* ระยะห่างด้านล่าง */
+        }
+
         nav {
             display: flex; /* ใช้ flexbox สำหรับจัดลิงก์ */
             justify-content: center; /* จัดกลางลิงก์ */
-            margin-top: 20px; /* ระยะห่างด้านบน */
-            margin-bottom: 20px; /* ระยะห่างด้านล่าง */
-            gap: 1ถpx; /* ระยะห่างระหว่างลิงก์ */
+            margin-bottom: 10px; /* ระยะห่างด้านล่าง */
+            gap: 10px; /* ระยะห่างระหว่างลิงก์ */
         }
 
         nav a {
             display: inline-block;
-            padding: 10px 20px;
+            padding: 5px 10px;
             margin: 5px;
             text-decoration: none;
             border-radius: 5px;
@@ -28,11 +35,25 @@
             background-color: #26796c; 
             color: #fff; 
         }
-    </style>
-</head>
-<body>
 
-<h1 style="font-size: 48px; font-weight: bold;">Route Ready</h1>
+        .logo {
+            max-width: 50px; /* กำหนดความกว้างสูงสุดของรูป */
+            height: auto; /* ความสูงปรับอัตโนมัติตามสัดส่วน */
+            vertical-align: middle; /* ให้แนวนอนของรูปอยู่ตรงกลาง */
+            margin-right: 10px; /* ระยะห่างระหว่างรูปและข้อความ */
+        }
+    </style>
+
+    
+  <div class="header">
+    <img src="Rlogo.png" alt="Logo" class="logo">
+    <h1 style="font-size: 36px; font-weight: bold;">Route Ready</h1>
+</div>
+
+</head>
+
+
+<body>
 
 <nav>
     <a href="/" id="home">Home</a>
