@@ -5,20 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Route Ready</title>
     <style>
-
         .header {
             margin-left: 20px;
             margin-top: 10px;
-            display: flex; /* ใช้ flexbox เพื่อให้โลโก้และข้อความอยู่ในบรรทัดเดียวกัน */
-            align-items: center; /* จัดแนวให้กลางในแนวตั้ง */
-            margin-bottom: 10px; /* ระยะห่างด้านล่าง */
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
         nav {
-            display: flex; /* ใช้ flexbox สำหรับจัดลิงก์ */
-            justify-content: center; /* จัดกลางลิงก์ */
-            margin-bottom: 10px; /* ระยะห่างด้านล่าง */
-            gap: 10px; /* ระยะห่างระหว่างลิงก์ */
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+            gap: 10px;
+            position: relative;
         }
 
         nav a {
@@ -32,65 +32,100 @@
         }
 
         nav a.active {
-            background-color: #26796c; 
-            color: #fff; 
+            background-color: #26796c;
+            color: #fff;
         }
 
         .logo {
-            max-width: 50px; /* กำหนดความกว้างสูงสุดของรูป */
-            height: auto; /* ความสูงปรับอัตโนมัติตามสัดส่วน */
-            vertical-align: middle; /* ให้แนวนอนของรูปอยู่ตรงกลาง */
-            margin-right: 10px; /* ระยะห่างระหว่างรูปและข้อความ */
+            max-width: 50px;
+            height: auto;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+
+        /* New styles for dropdown */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 5px;
+            top: 100%;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            margin: 0;
+            border-radius: 0;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover #group {
+            background-color: #26796c;
+            color: #fff;
         }
     </style>
-
-    
-  <div class="header">
-    <img src="Rlogo.png" alt="Logo" class="logo">
-    <h1 style="font-size: 36px; font-weight: bold;">Route Ready</h1>
-</div>
-
 </head>
 
-
 <body>
+    <div class="header">
+        <img src="Rlogo.png" alt="Logo" class="logo">
+        <h1 style="font-size: 36px; font-weight: bold;">Route Ready</h1>
+    </div>
 
-<nav>
-    <a href="/" id="home">Home</a>
-    <a href="/trip" id="trip">Trip</a>
-    <a href="/calendar" id="calendar">Calendar</a>
-    <a href="/hotel" id="hotel">Hotel</a>
-    <a href="/restaurant" id="restaurant">Restaurant</a>
-    <a href="/landmark" id="landmark">Landmark</a>
-    <a href="/transportation" id="transportation">Transportation</a>
-    <a href="/group" id="group">Group</a>
-    <a href="/profile" id="profile">Account</a>
-</nav>
+    <nav>
+        <a href="/" id="home">Home</a>
+        <a href="/trip" id="trip">Trip</a>
+        <a href="/calendar" id="calendar">Calendar</a>
+        <a href="/hotel" id="hotel">Hotel</a>
+        <a href="/restaurant" id="restaurant">Restaurant</a>
+        <a href="/landmark" id="landmark">Landmark</a>
+        <a href="/transportation" id="transportation">Transportation</a>
+        <div class="dropdown">
+            <a href="#" id="group">Group ▼</a>
+            <div class="dropdown-content">
+                <a href="/group-create">Create Group</a>
+                <a href="/group-join">Join Group</a>
+                <a href="/group-all">My Groups</a>
+                <a href="/group-settings">Group Settings</a>
+            </div>
+        </div>
+        <a href="/profile" id="profile">Account</a>
+    </nav>
 
-<slot></slot>
+    <slot></slot>
 
-<p>Have a nice trip!</p>
+    <script>
+        function setActiveLink() {
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+            document.querySelectorAll('nav a').forEach(a => {
+                if (a.getAttribute('href') === currentPath) {
+                    a.classList.add('active');
+                }
+            });
+        }
 
-<script>
-  // ฟังก์ชันที่จะตรวจสอบ URL และเพิ่มคลาส active ให้ลิงก์ที่ตรงกัน
-  function setActiveLink() {
-    // ดึง URL ปัจจุบัน
-    const currentPath = window.location.pathname;
-
-    // ลบคลาส active ออกจากลิงก์ทั้งหมดก่อน
-    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-
-    // เพิ่มคลาส active ให้กับลิงก์ที่ตรงกับ URL ปัจจุบัน
-    document.querySelectorAll('nav a').forEach(a => {
-      if (a.getAttribute('href') === currentPath) {
-        a.classList.add('active');
-      }
-    });
-  }
-
-  // เรียกใช้งานฟังก์ชันเมื่อโหลดหน้าเสร็จ
-  window.onload = setActiveLink;
-</script>
-
+        window.onload = setActiveLink;
+    </script>
 </body>
 </html>
+
+
