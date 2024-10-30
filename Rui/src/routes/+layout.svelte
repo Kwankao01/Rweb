@@ -1,52 +1,113 @@
-<!DOCTYPE html>
-<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <title>Route Ready</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-width: 320px;
+        }
+
         .header {
-            margin-left: 20px;
-            margin-top: 10px;
             display: flex;
             align-items: center;
-            margin-bottom: 10px;
+            padding: 0.625rem 1.25rem;
+            margin: 0.625rem;
         }
 
-        nav {
+        .logo-container {
             display: flex;
-            justify-content: center;
-            margin-bottom: 10px;
-            gap: 10px;
-            position: relative;
+            align-items: center;
+            flex-shrink: 0;
         }
 
-        nav a {
-            display: inline-block;
-            padding: 5px 10px;
-            margin: 5px;
-            text-decoration: none;
-            border-radius: 5px;
-            background-color: #f0f0f0;
-            color: #000;
-        }
-
-        nav a.active {
-            background-color: #26796c;
-            color: #fff;
+        .logo-link {
+            text-decoration: none;         /* Remove underline from the link */
+            color: black;                 /* Set text color to black */
+            display: flex;                /* Maintain flexbox layout */
+            align-items: center;          /* Center items vertically */
         }
 
         .logo {
-            max-width: 50px;
-            height: auto;
-            vertical-align: middle;
-            margin-right: 10px;
+            height: 50px;
+            width: auto;
+            margin-right: 0.625rem;
         }
 
-        /* New styles for dropdown */
+        .brand-name {
+            font-size: 1.875rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .main-nav {
+            display: flex;
+            gap: 1.25rem;
+            margin-left: 15rem;
+            flex-grow: 1;
+            justify-content: flex-start;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            height: 2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .profile-link {
+            margin-left: auto;
+            color: black;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 0.625rem;
+            font-size: 1.25rem;
+            margin-top: 0.625rem;
+        }
+
+        .nav-links a {
+            display: inline-block;
+            padding: 0.3125rem 0.625rem;
+            margin: 0.3125rem;
+            text-decoration: none;
+            border-radius: 5px;
+            color: #000;
+            font-size: 1.25rem;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+            background-color: #f1f1f1;
+        }
+
+        .nav-links a.active {
+            text-decoration: underline;
+            color: #000;
+        }
+
         .dropdown {
             position: relative;
-            display: inline-block;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown > a {
+            color: black;
+            text-decoration: none;
+            padding: 0.3125rem 0.625rem;
+            height: 100%;
+            display: flex;
+            align-items: center;
         }
 
         .dropdown-content {
@@ -58,15 +119,16 @@
             z-index: 1;
             border-radius: 5px;
             top: 100%;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
         }
 
         .dropdown-content a {
             color: black;
-            padding: 12px 16px;
+            padding: 0.75rem 1rem;
             text-decoration: none;
             display: block;
             margin: 0;
-            border-radius: 0;
         }
 
         .dropdown-content a:hover {
@@ -75,57 +137,122 @@
 
         .dropdown:hover .dropdown-content {
             display: block;
+            opacity: 1;
         }
 
-        .dropdown:hover #group {
-            background-color: #26796c;
-            color: #fff;
+        .dropdown:hover, #calendar:hover {
+            background-color: #f1f1f1;
+            border-radius: 20px;
+        }
+
+        #calendar {
+            color: black;
+            text-decoration: none;
+            transition: color 0.3s;
+            padding: 0.3125rem 0.625rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+        }
+
+        #profile {
+            display: flex;
+            padding: 0.3125rem;
+            align-items: center;
+        }
+
+        #profile:hover {
+            background-color: #f1f1f1;
+            border-radius: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .main-nav {
+                margin-left: 2rem;
+            }
+            
+            .profile-link {
+                margin-left: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-wrap: wrap;
+            }
+
+            .main-nav {
+                margin-left: 0;
+                margin-top: 1rem;
+                order: 2;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .profile-link {
+                order: 1;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
-
 <body>
     <div class="header">
-        <img src="Rlogo.png" alt="Logo" class="logo">
-        <h1 style="font-size: 36px; font-weight: bold;">Route Ready</h1>
+        <div class="logo-container">
+            <a href="/" class="logo-link"> <!-- Wrap the logo and brand name in an anchor tag -->
+                <img src="Rlogo.png" alt="Logo" class="logo">
+                <h1 class="brand-name">Route Ready</h1>
+            </a>
+        </div>
+
+        <nav class="main-nav">
+            <div class="dropdown">
+                <a href="#" id="group">Group</a>
+                <div class="dropdown-content">
+                    <a href="/group-create">Create Group</a>
+                    <a href="/group-join">Join Group</a>
+                    <a href="/group-all">My Groups</a>
+                    <a href="/group-settings">Group Settings</a>
+                </div>
+            </div>
+
+            <div class="dropdown">
+                <a href="#" id="trip">Trips</a>
+                <div class="dropdown-content">
+                    <a href="/trip-myTrip">My Trip</a>
+                    <a href="/trip-create">Create Trip</a>
+                </div>
+            </div>
+
+            <a href="/calendar" id="calendar">Calendar</a>
+        </nav>
+
+        <a href="/profile" id="profile" class="profile-link">
+            <i class="fas fa-user-circle" style="font-size: 30px;"></i>
+        </a>
     </div>
 
     <nav>
-        <a href="/" id="home">Home</a>
-        <a href="/trip" id="trip">Trip</a>
-        <a href="/calendar" id="calendar">Calendar</a>
-        <a href="/hotel" id="hotel">Hotel</a>
-        <a href="/restaurant" id="restaurant">Restaurant</a>
-        <a href="/landmark" id="landmark">Landmark</a>
-        <a href="/transportation" id="transportation">Transportation</a>
-        <div class="dropdown">
-            <a href="#" id="group">Group ▼</a>
-            <div class="dropdown-content">
-                <a href="/group-create">Create Group</a>
-                <a href="/group-join">Join Group</a>
-                <a href="/group-all">My Groups</a>
-                <a href="/group-settings">Group Settings</a>
-            </div>
+        <div class="nav-links">
+            <a href="/" id="all"><i class="fas fa-home"></i> Search all</a>
+            <a href="/hotel" id="hotel"><i class="fas fa-hotel"></i> Hotel</a>
+            <a href="/restaurant" id="restaurant"><i class="fas fa-utensils"></i> Restaurant</a>
+            <a href="/landmark" id="landmark"><i class="fas fa-landmark"></i> Landmark</a>
+            <a href="/transportation" id="transportation"><i class="fas fa-plane"></i> Flight</a>
         </div>
-        <a href="/profile" id="profile">Account</a>
     </nav>
 
     <slot></slot>
 
     <script>
-        function setActiveLink() {
-            const currentPath = window.location.pathname;
-            document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-            document.querySelectorAll('nav a').forEach(a => {
-                if (a.getAttribute('href') === currentPath) {
-                    a.classList.add('active');
-                }
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
             });
-        }
-
-        window.onload = setActiveLink;
+        });
     </script>
 </body>
-</html>
-
-
