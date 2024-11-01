@@ -65,7 +65,7 @@
             <h3>Our Partners</h3>
             <div class="partner-logos">
                 <img src="Google.jpg" alt="Google">
-                <img src="TripAdvisor.jpg" alt="TripAdvisor">
+                <img src="TripAdvisor.png" alt="TripAdvisor">
             </div>
         </div>
     </div>
