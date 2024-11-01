@@ -1,9 +1,6 @@
 <script lang="ts">
-    import { goto } from '$app/navigation'; // นำเข้า goto สำหรับการนำทาง
+    import { goto } from '$app/navigation';
 
-    // รายการร้านอาหารตัวอย่าง
-
-    
     let restaurants = [
         {
             id: 1,
@@ -47,8 +44,8 @@
         }
     ];
 
-    function handleSelect(restaurantId) {
-        goto(`/restaurant/${restaurantId}`); // นำไปยังหน้าร้านอาหารที่เลือก
+    function handleSelect(restaurantId: number) {
+        goto(`/restaurant/${restaurantId}`);
     }
 </script>
 
@@ -66,7 +63,7 @@
 <section class="restaurant-selection">
     <div class="restaurant-list">
         {#each restaurants as restaurant}
-            <div class="restaurant-card" on:click={() => handleSelect(restaurant.id)}>
+            <button type="button" class="restaurant-card" on:click={() => handleSelect(restaurant.id)} on:keydown={(e) => e.key === 'Enter' && handleSelect(restaurant.id)}>
                 <img src={restaurant.image} alt={restaurant.name} class="restaurant-image" />
                 <div class="restaurant-info">
                     <h3>{restaurant.name}</h3>
@@ -78,13 +75,12 @@
                     </div>
                     <p>{restaurant.address}</p>
                 </div>
-            </div>
+            </button>
         {/each}
     </div>
 </section>
 
 <style>
-    /* Search bar styling */
     .search-container {
         display: flex;
         justify-content: center;
@@ -92,18 +88,18 @@
     }
 
     .search-input {
-        padding: 10px 20px;                  
+        padding: 10px 20px;
         border: 1px solid #ccc;
-        border-radius: 30px;                 
-        font-size: 18px;                     
-        width: 800px;                        
-        max-width: 100%;                     
-        transition: width 0.3s ease;         
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
+        border-radius: 30px;
+        font-size: 18px;
+        width: 800px;
+        max-width: 100%;
+        transition: width 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
 
     .search-button {
-        margin-left: -40px;                  
+        margin-left: -40px;
         background: none;
         border: none;
         cursor: pointer;
@@ -119,19 +115,25 @@
 
     .restaurant-list {
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 3 คอลัมน์ */
+        grid-template-columns: repeat(3, 1fr);
         gap: 15px;
     }
 
     .restaurant-card {
+        background-color: #fff;
+        border: none;
         display: flex;
         flex-direction: column;
         padding: 15px;
-        background-color: #fff;
         border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         cursor: pointer;
         transition: transform 0.2s;
+    }
+
+    .restaurant-card:focus {
+        outline: none;
+        box-shadow: 0 0 5px #26796c;
     }
 
     .restaurant-card:hover {
@@ -170,17 +172,16 @@
     }
 
     .rating .fa-star.filled {
-        color: #ffcc00; /* สีดาวที่เต็ม */
+        color: #ffcc00;
     }
 
-    /* Responsive adjustments */
     @media (max-width: 768px) {
         .search-input {
-            width: 90%;                    
+            width: 90%;
         }
 
         .restaurant-list {
-            grid-template-columns: 1fr; /* 1 คอลัมน์บนหน้าจอเล็ก */
+            grid-template-columns: 1fr;
         }
     }
 </style>
