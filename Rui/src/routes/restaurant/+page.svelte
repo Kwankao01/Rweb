@@ -27,12 +27,12 @@
         },
         {
             id: 3,
-            name: "Nong Rim Nam",
-            image: "thai.jpg",
-            rating: 4.7,
+            name: "JAY FAI",
+            image: "https://axwwgrkdco.cloudimg.io/v7/__gmpics3__/2ea032819d7a4633bf54ccba9a7ea8b4.jpg?w=700&h=700&org_if_sml=1",
+            rating: 4.3,
             reviews: 135,
-            price: 500,
-            cancellation: "Free cancellation",
+            price: 1000,
+            cancellation: "",
             city: "Bangkok",
         },
         {
