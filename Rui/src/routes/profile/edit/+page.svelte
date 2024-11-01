@@ -9,7 +9,7 @@
         profileImage: "https://example.com/path/to/profile-image.jpg",
         birthdate: "1989-12-13",
         gender: "Female",
-        address: "123 ลาดพร้าว, กรุงเทพ, ไทย",
+        address: "123 Ladprao, Bangkok, Thailand",
         phoneNumber: "+66 123 456 789"
     };
 
