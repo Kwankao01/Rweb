@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="th">
 <head>
     <div style="text-align: center; margin-top: 20px">
         <h1 style="font-size: 46px; font-weight: bold;">Find Flights</h1>
@@ -102,6 +100,7 @@
         <input type="text" class="search-input" placeholder="Arrival city" id="arrival">
         <input type="date" class="date-input" id="flight-date">
         <button class="search-button" onclick="searchFlights()">Search</button>
+
     </div>
 
     <section class="flight-selection">
@@ -204,4 +203,3 @@
     </script>
 
 </body>
-</html>
