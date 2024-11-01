@@ -203,24 +203,23 @@
     <div class="header">
         <div class="logo-container">
             <a href="/" class="logo-link"> <!-- Wrap the logo and brand name in an anchor tag -->
-                <img src="Rlogo.png" alt="Logo" class="logo">
+                <img src="/Rlogo.png" alt="Logo" class="logo">
                 <h1 class="brand-name">Route Ready</h1>
             </a>
         </div>
 
         <nav class="main-nav">
             <div class="dropdown">
-                <a href="#" id="group">Group</a>
+                <button id="group">Group</button>
                 <div class="dropdown-content">
-                    <a href="/group-create">Create Group</a>
-                    <a href="/group-join">Join Group</a>
-                    <a href="/group-all">My Groups</a>
-                    <a href="/group-settings">Group Settings</a>
+                    <a href="/group/group-create">Create Group</a>
+                    <a href="/group/group-join">Join Group</a>
+                    <a href="/group/group-all">My Groups</a>
                 </div>
             </div>
 
             <div class="dropdown">
-                <a href="#" id="trip">Trips</a>
+                <button id="trip">Trips</button>
                 <div class="dropdown-content">
                     <a href="/trip-myTrip">My Trip</a>
                     <a href="/trip-create">Create Trip</a>
