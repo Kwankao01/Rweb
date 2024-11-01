@@ -90,7 +90,7 @@
     .footer-section h3 {
         font-size: 18px;
         margin-bottom: 10px;
-        color: #003580;
+        color: #26796c;
     }
 
     .footer-section ul {
