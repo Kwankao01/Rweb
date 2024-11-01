@@ -248,7 +248,8 @@
         </div>
     </nav>
 <!-- Main Content Slot -->
-<slot></slot>
+<slot />
+<div style="margin-bottom: 40px;"></div> <!-- Spacer div -->
 
 <!-- Footer Component -->
 <Footer />

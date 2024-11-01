@@ -76,6 +76,7 @@
         background-color: #f9f9f9;
         color: #26796c;
         padding: 30px 0;
+        margin-top: 40px; /* Add margin to the top of the footer */
     }
 
     .footer-content {
