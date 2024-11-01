@@ -1,6 +1,79 @@
+<script lang="ts">
+    import { goto } from '$app/navigation'; // นำเข้า goto สำหรับการนำทาง
+
+    // รายการที่พักตัวอย่าง
+
+
+    let hotels = [
+        {
+            id: 1,
+            name: "The Riverie by Katathani",
+            image: "The Riverie by Katathani.jpg",
+            rating: 4.5,
+            reviews: 125,
+            price: 3795,
+            cancellation: "Free cancellation",
+            location: "Chiang Rai"
+        },
+        {
+            id: 2,
+            name: "Hi Chiangrai Hotel",
+            image: "Hi Chiangrai Hotel.jpg",
+            rating: 4.6,
+            reviews: 91,
+            price: 1243,
+            cancellation: "Free cancellation",
+            location: "Chiang Rai"
+        },
+        {
+            id: 3,
+            name: "Phowadol Resort and Spa",
+            image: "Phowadol Resort and Spa.jpg",
+            rating: 3.6,
+            reviews: 28,
+            price: 903,
+            cancellation: "Free cancellation",
+            location: "Chiang Rai"
+        }
+       
+    ];
+    function handleSelect(hotelId: number) {
+        goto(`/hotel/${hotelId}`); // นำไปยังหน้าที่พักที่เลือก
+    }
+</script>
+
 <div style="text-align: center; margin-top: 20px">
     <h1 style="font-size: 46px; font-weight: bold;">Stay somewhere great</h1>
 </div>
+
+<div class="search-container">
+    <input type="text" class="search-input" placeholder="Hotel or destination...">
+    <button class="search-button"><i class="fas fa-search"></i></button>
+</div>
+
+<p style="text-align: center; font-size: 24px; margin-top: 20px;">Hotel List</p>
+
+<section class="hotel-selection">
+    <div class="hotel-list">
+        {#each hotels as hotel}
+            <div class="hotel-card" on:click={() => handleSelect(hotel.id)}>
+                <img src={hotel.image} alt={hotel.name} class="hotel-image" />
+                <div class="hotel-info">
+                    <h3>{hotel.name}</h3>
+                    <div class="rating">
+                        {#each Array(5) as _, index}
+                            <i class={`fas fa-star ${index < Math.floor(hotel.rating) ? 'filled' : ''}`}></i>
+                        {/each}
+                        <span>({hotel.reviews} reviews)</span>
+                    </div>
+                    <p class="cancellation">{hotel.cancellation}</p>
+                    <p class="price">เริ่มต้น ฿ {hotel.price.toLocaleString()}</p>
+                    <p>{hotel.location}</p>
+                </div>
+            </div>
+        {/each}
+    </div>
+</section>
 
 <style>
     /* Search bar styling */
@@ -11,18 +84,18 @@
     }
 
     .search-input {
-        padding: 10px 20px;                  /* ขนาดของ padding ให้กลมขึ้น */
+        padding: 10px 20px;                  
         border: 1px solid #ccc;
-        border-radius: 30px;                 /* เพิ่มความกลม */
-        font-size: 18px;                     /* เพิ่มขนาดฟอนต์ */
-        width: 800px;                        /* เพิ่มความกว้าง */
-        max-width: 100%;                     /* ให้ปรับตามขนาดหน้าจอ */
-        transition: width 0.3s ease;         /* เอฟเฟกต์การขยาย */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* เพิ่มเงา */
+        border-radius: 30px;                 
+        font-size: 18px;                     
+        width: 800px;                        
+        max-width: 100%;                     
+        transition: width 0.3s ease;         
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
     }
 
     .search-button {
-        margin-left: -40px;                  /* ปรับตำแหน่งให้ตรงกับ input */
+        margin-left: -40px;                  
         background: none;
         border: none;
         cursor: pointer;
@@ -30,55 +103,87 @@
         font-size: 18px;
     }
 
-    .centered-figure {
+    .hotel-selection {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .hotel-list {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* 3 คอลัมน์ */
+        gap: 15px;
+    }
+
+    .hotel-card {
         display: flex;
-        justify-content: center;
-        margin: 20px 0;
+        flex-direction: column;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: transform 0.2s;
     }
 
-    .button {
-        position: absolute;
-        top: 160px;
-        left: 30%;
-        transform: translateX(-50%);
-        padding: 15px 30px;
-        background-color: #ffffff;
-        color: #4c4c4c;
-        text-decoration: none;
-        border-radius: 30px;
-        font-size: 22px;
-        transition: background-color 0.3s;
-        z-index: 0;
+    .hotel-card:hover {
+        transform: scale(1.02);
     }
 
-    .button:hover {
-        background-color: #d0d0d0;
+    .hotel-image {
+        width: 100%;
+        height: 120px;
+        border-radius: 8px;
+        object-fit: cover;
+        margin-bottom: 10px;
     }
 
-    .button i {
-        margin-right: 10px;
+    .hotel-info h3 {
+        font-size: 1.5rem;
+        color: #26796c;
+        margin: 0;
+    }
+
+    .hotel-info p {
+        color: #555;
+        margin: 5px 0;
+    }
+
+    .rating {
+        display: flex;
+        align-items: center;
+        color: #26796c;
+        margin-bottom: 5px;
+    }
+
+    .rating .fa-star {
+        color: #ccc;
+        margin-right: 3px;
+    }
+
+    .rating .fa-star.filled {
+        color: #ffcc00; /* สีดาวที่เต็ม */
+    }
+
+    .cancellation {
+        font-size: 14px;
+        color: #26796c;
+    }
+
+    .price {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #26796c;
     }
 
     /* Responsive adjustments */
     @media (max-width: 768px) {
         .search-input {
-            width: 90%;                    /* ลดความกว้างบนหน้าจอเล็ก */
+            width: 90%;                    
         }
 
-        .button {
-            top: 140px;
-            font-size: 18px;
-            padding: 10px 25px;
-        }
-
-        .centered-figure img {
-            width: 90%;                   /* ลดขนาดรูปบนหน้าจอเล็ก */
+        .rental-list {
+            grid-template-columns: 1fr; /* 1 คอลัมน์บนหน้าจอเล็ก */
         }
     }
 </style>
-
-<div class="search-container">
-    <input type="text" class="search-input" placeholder="Hotel name or destination...">
-    <button class="search-button"><i class="fas fa-search"></i></button>
-</div>
-<p>Transportation List</p>

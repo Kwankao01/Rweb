@@ -1,3 +1,7 @@
+<script>
+    import Footer from '$lib/Footer.svelte';  // Adjust the path if Footer is in another directory
+</script>
+
 <head>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <title>Route Ready</title>
@@ -244,8 +248,11 @@
             <a href="/transportation" id="transportation"><i class="fas fa-plane"></i> Flight</a>
         </div>
     </nav>
+<!-- Main Content Slot -->
+<slot></slot>
 
-    <slot></slot>
+<!-- Footer Component -->
+<Footer />
 
     <script>
         document.querySelectorAll('.nav-links a').forEach(link => {
