@@ -84,7 +84,7 @@
                         <span>({restaurant.reviews} reviews)</span>
                     </div>
                     <p class="cuisine">{restaurant.cuisine}</p>
-                    <p class="price">Avg ฿ {restaurant.price.toLocaleString()}</p>
+                    <p class="price">เริ่มต้น ฿ {restaurant.price.toLocaleString()}</p>
                     <p>{restaurant.location}</p>
                 </div>
             </div>

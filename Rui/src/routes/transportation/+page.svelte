@@ -1,5 +1,3 @@
-<!DOCTYPE html>
-<html lang="th">
 <head>
     <div style="text-align: center; margin-top: 20px">
         <h1 style="font-size: 46px; font-weight: bold;">Find Flights</h1>
@@ -204,4 +202,3 @@
     </script>
 
 </body>
-</html>
