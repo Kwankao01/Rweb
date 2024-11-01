@@ -124,7 +124,6 @@
     <input type="text" class="search-input" placeholder="Search for a landmark...">
     <button class="search-button"><i class="fas fa-search"></i></button>
 </div>
-<p>Landmark List</p>
 
 <script lang="ts">
     import { goto } from '$app/navigation';

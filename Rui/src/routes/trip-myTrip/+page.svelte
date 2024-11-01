@@ -1,19 +1,9 @@
-<div class="box1">First Trip.</div>
-<div class="box2">Second Trip.</div>
+<script>
+ import TripList from '$lib/TripList.svelte'; // 
+</script>
 
-<style>
-    .box1 {
-      max-width: 300px; /* Form width */
-      margin: 5rem auto;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.13);
-    }
-    .box2 {
-      max-width: 300px; /* Form width */
-      margin: 5rem auto;
-      padding: 2rem;
-      border-radius: 8px;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.13);
-    }
-  </style>
+<main>
+  <h1 style="margin-left: 30px; font-weight: bold; font-size: 40px;">My Trips</h1>
+
+  <TripList />
+</main>

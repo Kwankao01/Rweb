@@ -1,5 +1,5 @@
 <script>
-    import Footer from '$lib/Footer.svelte';  // Adjust the path if Footer is in another directory
+    import Footer from '$lib/Footer.svelte';
 </script>
 
 <head>
@@ -55,7 +55,7 @@
             flex-grow: 1;
             justify-content: flex-start;
             align-items: center;
-            font-weight: 600;
+            
         }
 
         .nav-item {
@@ -229,7 +229,7 @@
                     <a href="/trip-create">Create Trip</a>
                 </div>
             </div>
-
+            
             <a href="/calendar" id="calendar">Calendar</a>
         </nav>
 
@@ -241,10 +241,10 @@
     <nav>
         <div class="nav-links">
             <a href="/" id="all"><i class="fas fa-home"></i> Search all</a>
-            <a href="/hotel" id="hotel"><i class="fas fa-hotel"></i> Hotel</a>
-            <a href="/restaurant" id="restaurant"><i class="fas fa-utensils"></i> Restaurant</a>
-            <a href="/landmark" id="landmark"><i class="fas fa-landmark"></i> Landmark</a>
-            <a href="/transportation" id="transportation"><i class="fas fa-plane"></i> Flight</a>
+            <a href="/hotel" id="hotel"><i class="fas fa-hotel"></i> Hotels</a>
+            <a href="/restaurant" id="restaurant"><i class="fas fa-utensils"></i> Restaurants</a>
+            <a href="/landmark" id="landmark"><i class="fas fa-landmark"></i> Landmarks</a>
+            <a href="/transportation" id="transportation"><i class="fas fa-plane"></i> Flights</a>
         </div>
     </nav>
 <!-- Main Content Slot -->
