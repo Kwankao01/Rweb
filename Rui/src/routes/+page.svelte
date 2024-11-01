@@ -90,4 +90,3 @@
     </a>
 </figure>
 
-<p>Home page</p>
