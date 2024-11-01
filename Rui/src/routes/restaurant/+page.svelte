@@ -93,7 +93,33 @@
 </section>
 
 <style>
-    /* Centered title */
+    /* Search bar styling */
+    .search-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    .search-input {
+        padding: 10px 20px;
+        border: 1px solid #ccc;
+        border-radius: 30px;
+        font-size: 18px;
+        width: 800px;
+        max-width: 100%;
+        transition: width 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .search-button {
+        margin-left: -40px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #26796c;
+        font-size: 18px;
+    }
+
     .restaurant-selection {
         max-width: 1200px;
         margin: 0 auto;
@@ -102,7 +128,7 @@
 
     .restaurant-list {
         display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 3-column layout */
+        grid-template-columns: repeat(3, 1fr);
         gap: 15px;
     }
 
@@ -169,16 +195,18 @@
 
     /* Responsive adjustments */
     @media (max-width: 768px) {
+        .search-input {
+            width: 90%;
+        }
+
         .restaurant-list {
-            grid-template-columns: 1fr; /* Single column on small screens */
+            grid-template-columns: 1fr;
         }
     }
 
     @media (min-width: 769px) and (max-width: 1024px) {
         .restaurant-list {
-            grid-template-columns: repeat(2, 1fr); /* Two columns on medium screens */
+            grid-template-columns: repeat(2, 1fr);
         }
     }
 </style>
-
-
