@@ -1,6 +1,7 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
 
+    export let top: string;
     export let title: string;
     export let searchPlaceholder: string;
     export let items: { 
@@ -45,8 +46,8 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-<div style="text-align: center; margin-top: 20px">
-    <h1 style="font-size: 36px; font-weight: bold; color: #26796c;">{title}</h1>
+<div style="margin-top: 20px; text-align: center;">
+    <h1 style="font-size: 46px; font-weight: bold;">{top}</h1>
 </div>
 
 <div class="search-container">
@@ -59,15 +60,20 @@
     />
 </div>
 
+<div class="guarantees" style="text-align: center; margin-top: 30px; font-size: 22px">
+    <span><i class="fas fa-money-bill-wave"></i> Price Match Guarantee</span> 
+    <span><i class="fas fa-book-open"></i> Booking Guarantee</span> 
+    <span><i class="fas fa-bed"></i> No Credit Card Fees</span> 
+</div>
+
+<div style="margin-top: 20px; padding-left: 30px;">
+    <h1 style="font-size: 30px; font-weight: 600; color: black;">{title}</h1>
+</div>
+
 <div class="featured-items">
-    <div class="guarantees">
-        <span><i class="fas fa-money-bill-wave"></i> Price Match Guarantee</span> 
-        <span><i class="fas fa-book-open"></i> Booking Guarantee</span> 
-        <span><i class="fas fa-bed"></i> No Credit Card Fees</span> 
-    </div>
 
     {#if cities.length > 0}
-        <div class="city-filters">
+        <div class="city-filters" style="margin-top: 5px; padding-left: 5px;">
             <button
                 class:selected={!selectedCity}
                 on:click={() => selectedCity = ""}
@@ -86,7 +92,7 @@
     {/if}
 </div>
 
-<section class="item-selection">
+<section class="item-selection" style="margin-top: 5px">
     <div class="item-list">
         {#each filteredItems as item}
             <div 
@@ -144,25 +150,28 @@
 
     .featured-items {
         max-width: 1200px;
-        margin: 20px auto;
         padding: 20px;
-        text-align: center;
+        text-align: left;
     }
 
     .guarantees {
         display: flex;
-        gap: 15px;
-        font-size: 16px;
-        color: #333;
-        margin-bottom: 10px;
-        justify-content: center;
+        justify-content: center; /* ทำให้ตัวอักษรอยู่ตรงกลาง */
+        gap: 20px; /* ระยะห่างระหว่างแต่ละไอคอน */
+        text-align: center;
+        margin-top: 30px;
+        font-size: 22px;
+    }
+
+    .guarantees span {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* ระยะห่างระหว่างไอคอนและข้อความ */
     }
 
     .city-filters {
         display: flex;
         gap: 10px;
-        justify-content: center;
-        margin-top: 20px;
     }
 
     .city-filters button {

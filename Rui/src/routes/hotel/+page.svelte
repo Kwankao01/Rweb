@@ -1,5 +1,5 @@
 <script>
-    import ItemList from '$lib/itemlist.svelte';
+    import ItemList from "$lib/ItemList.svelte";
 
     let cities = ["Chiang Rai", "Chiang Mai", "Phuket", "Chonburi", "Hatyai"];
     let selectedCity = "Chiang Rai"; // Default selected city
@@ -111,8 +111,9 @@
 </script>
 
 <ItemList
-    title="Featured Hotels"
+    top="Stay somewhere great"
     searchPlaceholder="Hotel or destination..."
+    title="Featured Hotels"
     items={hotels}
     cities={cities}
     selectedCity={selectedCity}

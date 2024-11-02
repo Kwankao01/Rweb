@@ -1,5 +1,5 @@
 <script>
-    import ItemList from '$lib/itemlist.svelte';
+    import ItemList from '$lib/ItemList.svelte';
 
     let cities = ["Ayutthaya", "Bangkok", "Chiang Mai"];
     let selectedCity = "Bangkok";
@@ -40,6 +40,7 @@
 </script>
 
 <ItemList
+    top="Explore places"
     title="Must-Visit Landmarks"
     searchPlaceholder="Landmark or destination..."
     items={landmarks}

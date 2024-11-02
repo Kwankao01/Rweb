@@ -66,9 +66,7 @@
         }
 
         .profile-link {
-            margin-left: auto;
             color: black;
-            text-decoration: none;
         }
 
         .favorite-link {
@@ -251,7 +249,7 @@
             <div class="dropdown">
                 <button id="trip">Trips</button>
                 <div class="dropdown-content">
-                    <a href="/trip-myTrip">My Trip</a>
+                    <a href="/Trip-list">My Trip</a>
                     <a href="/trip-create">Create Trip</a>
                 </div>
             </div>

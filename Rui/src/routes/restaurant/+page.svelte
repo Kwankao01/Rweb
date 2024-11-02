@@ -72,6 +72,7 @@
 </script>
 
 <ItemList 
+    top="Find places to eat"
     title="Top Restaurants"
     searchPlaceholder="Search for restaurants..."
     items={restaurants}
