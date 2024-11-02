@@ -1,10 +1,9 @@
-<script lang="ts">
-    import { goto } from '$app/navigation'; // นำเข้า goto สำหรับการนำทาง
+<script>
+    import ItemList from '$lib/ItemList.svelte';
 
     let cities = ["Chiang Rai", "Chiang Mai", "Phuket", "Chonburi", "Hatyai"];
     let selectedCity = "Chiang Rai"; // Default selected city
 
-    // รายการที่พักตัวอย่าง
     let hotels = [
         {
             id: 1,
@@ -43,7 +42,7 @@
             rating: 4.0,
             reviews: 169,
             price: 1061,
-            cancellation: "-",
+            cancellation: "",
             city: "Chiang Mai"
         },
         {
@@ -53,7 +52,7 @@
             rating: 4.5,
             reviews: 43,
             price: 3144,
-            cancellation: "-",
+            cancellation: "",
             city: "Chiang Mai"
         },
         {
@@ -73,7 +72,7 @@
             rating: 4.9,
             reviews: 342,
             price: 2400,
-            cancellation: "-",
+            cancellation: "",
             city: "Phuket"
         },
         {
@@ -109,224 +108,13 @@
        
     ];
 
-    function handleSelect(hotelId: number) {
-        goto(`/hotel/${hotelId}`); // นำไปยังหน้าที่พักที่เลือก
-    }
-    function selectCity(city: string) {
-        selectedCity = city;
-    }
-    
 </script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-<div style="text-align: center; margin-top: 20px">
-    <h1 style="font-size: 46px; font-weight: bold;">Stay somewhere great</h1>
-</div>
-
-<div class="search-container">
-    <input type="text" class="search-input" placeholder="Hotel or destination...">
-    <button class="search-button"><i class="fas fa-search"></i></button>
-</div>
-
-<div class="featured-hotels">
-    <h2>Featured Hotels</h2>
-    <div class="guarantees">
-        <span><i class="fas fa-money-bill-wave"></i> Price Match Guarantee</span> 
-        <span><i class="fas fa-book-open"></i> Hotel Booking Guarantee</span> 
-        <span><i class="fas fa-bed"></i> Stay Guarantee</span> 
-    </div>
-    
-
-    <!-- City Filters -->
-    <div class="city-filters">
-        {#each cities as city}
-            <button
-                class:selected={selectedCity === city}
-                on:click={() => selectCity(city)}
-            >
-                {city}
-            </button>
-        {/each}
-    </div>
-</div>
-
-<section class="hotel-selection">
-    <div class="hotel-list">
-        {#each hotels.filter(hotel => hotel.city === selectedCity) as hotel}
-            <div class="hotel-card" on:click={() => handleSelect(hotel.id)}>
-                <img src={hotel.image} alt={hotel.name} class="hotel-image" />
-                <div class="hotel-info">
-                    <h3>{hotel.name}</h3>
-                    <div class="rating">
-                        {#each Array(5) as _, index}
-                            <i class={`fas fa-star ${index < Math.floor(hotel.rating) ? 'filled' : ''}`}></i>
-                        {/each}
-                        <span>({hotel.reviews} reviews)</span>
-                    </div>
-                    <p class="cancellation">{hotel.cancellation}</p>
-                    <p class="price">From ฿ {hotel.price.toLocaleString()}</p>
-                    <p>{hotel.city}</p>
-                </div>
-            </div>
-        {/each}
-    </div>
-</section>
-
-
-
-<style>
-    /* Search bar styling */
-    .search-container {
-        display: flex;
-        justify-content: center;
-        margin-top: 10px;
-    }
-
-    .search-input {
-        padding: 10px 20px;                  
-        border: 1px solid #ccc;
-        border-radius: 30px;                 
-        font-size: 18px;                     
-        width: 800px;                        
-        max-width: 100%;                     
-        transition: width 0.3s ease;         
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
-    }
-
-    .search-button {
-        margin-left: -40px;                  
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #26796c;
-        font-size: 18px;
-    }
-
-    .featured-hotels {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-
-    h2 {
-        font-size: 30px;
-        font-weight: bold;
-        color: #2b2b2b;
-    }
-
-    .guarantees {
-        display: flex;
-        gap: 20px;
-        font-size: 18px;
-        color: #333;
-        margin-bottom: 10px;
-    }
-
-    /* City filter buttons */
-    .city-filters {
-        display: flex;
-        gap: 10px;
-        margin: 20px 0;
-    }
-
-    .city-filters button {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 20px;
-        background-color: #f1f1f1;
-        color: #333;
-        cursor: pointer;
-        font-size: 18px;
-        font-weight: bold;
-    }
-
-    .city-filters button.selected {
-        background-color: #26796c;
-        color: white;
-    }
-
-    .hotel-selection {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-
-    .hotel-list {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr); /* 3 คอลัมน์ */
-        gap: 15px;
-    }
-
-    .hotel-card {
-        display: flex;
-        flex-direction: column;
-        padding: 15px;
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .hotel-card:hover {
-        transform: scale(1.02);
-    }
-
-    .hotel-image {
-        width: 100%;
-        height: 120px;
-        border-radius: 8px;
-        object-fit: cover;
-        margin-bottom: 10px;
-    }
-
-    .hotel-info h3 {
-        font-size: 1.5rem;
-        color: #26796c;
-        margin: 0;
-    }
-
-    .hotel-info p {
-        color: #555;
-        margin: 5px 0;
-    }
-
-    .rating {
-        display: flex;
-        align-items: center;
-        color: #26796c;
-        margin-bottom: 5px;
-    }
-
-    .rating .fa-star {
-        color: #ccc;
-        margin-right: 3px;
-    }
-
-    .rating .fa-star.filled {
-        color: #ffcc00; /* สีดาวที่เต็ม */
-    }
-
-    .cancellation {
-        font-size: 14px;
-        color: #26796c;
-    }
-
-    .price {
-        font-size: 1.2em;
-        font-weight: bold;
-        color: #26796c;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .search-input {
-            width: 90%;                    
-        }
-
-        .rental-list {
-            grid-template-columns: 1fr; /* 1 คอลัมน์บนหน้าจอเล็ก */
-        }
-    }
-</style>
+<ItemList
+    title="Featured Hotels"
+    searchPlaceholder="Hotel or destination..."
+    items={hotels}
+    cities={cities}
+    selectedCity={selectedCity}
+    itemRoute="/hotel"
+/>
