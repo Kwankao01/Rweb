@@ -1,37 +1,32 @@
 <script lang="ts">
-    import { goto } from '$app/navigation'; // นำเข้า goto สำหรับการนำทาง
+    import { onDestroy } from 'svelte';
+    import { userStore } from '$lib/stores/userStore';
+    import { goto } from '$app/navigation';
 
-    let user = {
-        id: "12345",
-        name: "Taylor Swift",
-        email: "taylor@gmail.com",
-        profileImage: "taylor.jpg",
-        birthdate: "1989-12-13",
-        gender: "Female",
-        address: "123 Ladprao, Bangkok, Thailand",
-        phoneNumber: "+66 123 456 789"
-    };
+    let user;
 
-    let calendarEvents = [
-        { title: "Birthday Party", date: "2024-11-10" },
-        { title: "Meeting with Group", date: "2024-11-20" },
-        { title: "Travel Trip to Paris", date: "2024-11-15" }
-    ];
+    // โหลดข้อมูลผู้ใช้จาก Store
+    const unsubscribe = userStore.subscribe(value => {
+        user = { ...value }; // รับข้อมูลจาก Store
+    });
 
+    // ฟังก์ชันเพื่อเปลี่ยนไปยังหน้าแก้ไขโปรไฟล์
     function handleEdit() {
         goto('/profile/edit'); // นำไปยังหน้า Edit Profile
     }
+
+    onDestroy(() => {
+        unsubscribe(); // ยกเลิกการสมัครรับข้อมูลเมื่อคอมโพเนนต์ถูกทำลาย
+    });
 </script>
 
 <section class="profile">
-    <!-- รูปโปรไฟล์ผู้ใช้ -->
     <div class="profile-header">
         <img src={user.profileImage} alt="User Profile Image" class="profile-image" />
         <h2>{user.name}</h2>
         <p>{user.email}</p>
     </div>
 
-    <!-- ข้อมูลส่วนตัว -->
     <div class="personal-info">
         <h3>Personal Information</h3>
         <ul>
@@ -42,17 +37,6 @@
         </ul>
     </div>
 
-    <!-- ปฏิทิน -->
-    <div class="calendar">
-        <h3>Calendar Events</h3>
-        <ul>
-            {#each calendarEvents as event}
-                <li><strong>{event.title}</strong> - {event.date}</li>
-            {/each}
-        </ul>
-    </div>
-
-    <!-- ปุ่มแก้ไขข้อมูล -->
     <button class="edit-button" on:click={handleEdit}>Edit Info</button>
 </section>
 
@@ -89,7 +73,7 @@
         color: #555;
     }
 
-    .personal-info, .calendar {
+    .personal-info {
         margin-bottom: 20px;
         padding: 15px;
         background-color: #fff;

@@ -1,31 +1,24 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { createEventDispatcher } from 'svelte';
+    import { onDestroy } from 'svelte';
+    import { userStore } from '$lib/stores/userStore';
+    import { goto } from '$app/navigation';
 
-    let user = {
-        id: "12345",
-        name: "Taylor Swift",
-        email: "taylor@example.com",
-        profileImage: "https://example.com/path/to/profile-image.jpg",
-        birthdate: "1989-12-13",
-        gender: "Female",
-        address: "123 Ladprao, Bangkok, Thailand",
-        phoneNumber: "+66 123 456 789"
-    };
+    let user;
 
-    // Event dispatcher for saving edited info
-    const dispatch = createEventDispatcher();
+    // โหลดข้อมูลผู้ใช้จาก Store
+    const unsubscribe = userStore.subscribe(value => {
+        user = { ...value }; // รับข้อมูลจาก Store
+    });
 
     function handleSave() {
-        // Dispatch event to save the user data
-        dispatch('save', { user });
-        // Redirect back to profile page after saving
-        window.location.href = '/profile';
+        console.log("Before saving:", user); // ตรวจสอบข้อมูลก่อนบันทึก
+        userStore.update(current => ({ ...current, ...user })); // อัปเดตข้อมูลใน Store
+        console.log("Data saved:", user); // ตรวจสอบข้อมูลหลังจากบันทึก
+        goto('/profile'); // เปลี่ยนเส้นทางไปยังหน้า Profile
     }
 
-    // Optionally: load user data when the component mounts
-    onMount(() => {
-        // Here you can fetch user data if needed
+    onDestroy(() => {
+        unsubscribe(); // ยกเลิกการสมัครรับข้อมูลเมื่อคอมโพเนนต์ถูกทำลาย
     });
 </script>
 
@@ -107,3 +100,4 @@
         background-color: #1f5f54;
     }
 </style>
+
