@@ -12,6 +12,7 @@ export function load() {
             price: post.price,
             city: post.city,
             cancellation: post.cancellation,
+            type: "Hotel"
         })),
     };
 }

@@ -8,6 +8,7 @@ export const posts = [
         reviews: 20,
         location: "Bang Phra Subdistrict, Si Racha District, Chonburi Province",
         city: "Chonburi",
+        type: "landmark",
     },
     {
         slug: "junglecoaster",
@@ -25,6 +26,7 @@ export const posts = [
         reviews: 15,
         location: "Mae Rim District, Chiang Mai.",
         city: "Chiang Mai",
+        type: "landmark",
     },
     {
         slug: "watarun",
@@ -35,6 +37,7 @@ export const posts = [
         reviews: 10,
         location: "Wang Derm Road, Wat Arun Subdistrict; Bangkok Yai District Bangkok",
         city: "Bangkok",
+        type: "landmark",
     },
     {
         slug: "grandpalace",
@@ -45,6 +48,7 @@ export const posts = [
         reviews: 15,
         location: "Na Phra Lan Road, Phra Nakhon, Bangkok.",
         city: "Bangkok",
+        type: "landmark",
     },
     {
         slug: "floatingmarket",
@@ -55,6 +59,7 @@ export const posts = [
         reviews: 20,
         location: "Damnoen Saduak, Ratchaburi Province.",
         city: "Ratchaburi",
+        type: "landmark",
     },
     {
         slug: "phangnga",
@@ -65,6 +70,7 @@ export const posts = [
         reviews: 45,
         location: "Phang Nga Province.",
         city: "Phang Nga",
+        type: "landmark",
     },
     {
         slug: "elephantnaturepark",
@@ -75,5 +81,6 @@ export const posts = [
         reviews: 30,
         location: "Hang Dong, Chiang Mai.",
         city: "Chiang Mai",
+        type: "landmark",
     }
 ];

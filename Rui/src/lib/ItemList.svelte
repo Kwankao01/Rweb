@@ -1,5 +1,6 @@
-<script lang="js">
+<script>
     import { goto } from '$app/navigation';
+    import { favorites, addToFavorites, removeFromFavorites } from './favoritesStore.js';
 
     export let top;
     export let title;
@@ -7,35 +8,72 @@
     export let cities = []; 
     export let itemRoute = "/item"; 
     export let selectedCity;
+    export let filterType = 'city';
 
     let searchTerm = "";
-    let favoriteItems = new Set(); 
+    let showPopup = false;
+    let popupMessage = "";
 
     export let onSelectItem = (slug) => goto(`${itemRoute}/${slug}`);
 
-    // Toggle favorite status for an item
-    function toggleFavorite(slug, event) {
-        event.stopPropagation();
-        if (favoriteItems.has(slug)) {
-            favoriteItems.delete(slug);
-        } else {
-            favoriteItems.add(slug);
-        }
-        favoriteItems = favoriteItems; // Trigger reactivity
+    function displayPopup(message) {
+        popupMessage = message;
+        showPopup = true;
+        setTimeout(() => {
+            showPopup = false;
+        }, 2000);
     }
 
-    // Handle search input changes
+    function toggleFavorite(item, event) {
+    event.stopPropagation();
+    const isFavorite = $favorites.some(fav => fav.slug === item.slug);
+    
+    if (isFavorite) {
+        removeFromFavorites(item.slug);
+        displayPopup("Removed from favorites");
+    } else {
+        // ตรวจสอบและกำหนด type ตามหน้าที่กำลังใช้งาน
+        const itemType = 
+            window.location.pathname.includes('/restaurant') ? 'Restaurant' :
+            window.location.pathname.includes('/hotel') ? 'Hotel' :
+            window.location.pathname.includes('/landmark') ? 'Landmark' :
+            'Other';
+
+        addToFavorites({
+            ...item,
+            type: itemType // กำหนด type ตามหน้าที่กำลังใช้งาน
+        });
+        displayPopup("Added to favorites");
+    }
+}
+
     function handleSearch(event) {
         searchTerm = event.target.value;
     }
 
-    // Filter items based on search term and selected city
+    // Modified filter to handle both city and type filtering
+    // Modified filter to handle both city and type filtering
     $: filteredItems = items.filter(item => {
         const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCity = !selectedCity || selectedCity === item.city;
-        return matchesSearch && matchesCity;
+        let matchesFilter = true;
+
+        if (filterType === 'type' && selectedCity) {
+            console.log('Filtering by type:', selectedCity); // เพิ่ม debug log
+            console.log('Item type:', item.type);
+            matchesFilter = item.type === selectedCity;
+        } else if (filterType === 'city' && selectedCity) {
+            matchesFilter = item.city === selectedCity;
+        }
+
+        return matchesSearch && matchesFilter;
     });
 </script>
+
+{#if showPopup}
+    <div class="popup-message" class:show={showPopup}>
+        {popupMessage}
+    </div>
+{/if}
 
 <div style="margin-top: 20px; text-align: center;">
     <h1 style="font-size: 46px; font-weight: bold;">{top}</h1>
@@ -68,14 +106,14 @@
                 class:selected={!selectedCity}
                 on:click={() => selectedCity = ""}
             >
-                All Cities
+                {filterType === 'city' ? 'All Cities' : 'All Types'}
             </button>
-            {#each cities as city}
+            {#each cities as filter}
                 <button
-                    class:selected={selectedCity === city}
-                    on:click={() => selectedCity = city}
+                    class:selected={selectedCity === filter}
+                    on:click={() => selectedCity = filter}
                 >
-                    {city}
+                    {filter}
                 </button>
             {/each}
         </div>
@@ -95,12 +133,12 @@
                 <button
                     type="button"
                     class="heart-button"
-                    aria-label={favoriteItems.has(item.slug) ? "Remove from favorites" : "Add to favorites"}
-                    on:click={(e) => toggleFavorite(item.slug, e)}
+                    aria-label={$favorites.some(fav => fav.slug === item.slug) ? "Remove from favorites" : "Add to favorites"}
+                    on:click={(e) => toggleFavorite(item, e)}
                 >
                     <i 
                         class="fas fa-heart" 
-                        class:favorite={favoriteItems.has(item.slug)}
+                        class:favorite={$favorites.some(fav => fav.slug === item.slug)}
                     ></i>
                 </button>
                 <img src={item.image} alt={item.name} class="item-image" />
@@ -121,7 +159,29 @@
     </div>
 </section>
 
+
 <style>
+    /* Update popup styles to position at bottom right */
+    .popup-message {
+        position: fixed;
+        bottom: 20px;  /* Changed from top to bottom */
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 8px;
+        background-color: #26796c;
+        color: white;
+        z-index: 1000;
+        opacity: 0;
+        transform: translateY(20px); /* Changed direction of transform */
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .popup-message.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
     .search-container {
         display: flex;
         justify-content: center;

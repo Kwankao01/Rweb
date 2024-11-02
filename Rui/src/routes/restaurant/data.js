@@ -8,7 +8,8 @@ export const posts = [
         price: 1200,
         cancellation: "",
         city: "Bangkok",
-        content: "Authentic Japanese sushi experience with premium ingredients and skilled chefs."
+        content: "Authentic Japanese sushi experience with premium ingredients and skilled chefs.",
+        type: "restaurant",
     },
     {
         title: "Bistro by the Park",
@@ -19,7 +20,8 @@ export const posts = [
         price: 800,
         cancellation: "Free cancellation",
         city: "Chiang Mai",
-        content: "A cozy bistro with a relaxed atmosphere, offering fresh and delightful meals by the park."
+        content: "A cozy bistro with a relaxed atmosphere, offering fresh and delightful meals by the park.",
+        type: "restaurant",
     },
     {
         title: "JAY FAI",
@@ -30,7 +32,8 @@ export const posts = [
         price: 1000,
         cancellation: "",
         city: "Bangkok",
-        content: "Famous for her delicious crab omelette and street food with a Michelin-star twist."
+        content: "Famous for her delicious crab omelette and street food with a Michelin-star twist.",
+        type: "restaurant",
     },
     {
         title: "Le Du",
@@ -41,7 +44,8 @@ export const posts = [
         price: 2000,
         cancellation: "Free cancellation",
         city: "Bangkok",
-        content: "Award-winning fine dining restaurant with seasonal Thai-inspired cuisine."
+        content: "Award-winning fine dining restaurant with seasonal Thai-inspired cuisine.",
+        type: "restaurant",
     },
     {
         title: "Burger Joint",
@@ -52,7 +56,8 @@ export const posts = [
         price: 1500,
         cancellation: "Free cancellation",
         city: "Chiang Mai",
-        content: "Popular spot for delicious, juicy burgers with a variety of topping options."
+        content: "Popular spot for delicious, juicy burgers with a variety of topping options.",
+        type: "restaurant",
     },
     {
         title: "Red Sauce",
@@ -63,6 +68,7 @@ export const posts = [
         price: 2500,
         cancellation: "",
         city: "Phuket",
-        content: "Luxury Italian restaurant offering fresh pasta, seafood, and beautiful views of Phuket."
+        content: "Luxury Italian restaurant offering fresh pasta, seafood, and beautiful views of Phuket.",
+        type: "restaurant",
     }
 ];

@@ -10,7 +10,8 @@ export function load() {
             rating: post.rating,
             reviews: post.reviews,
             location: post.location,
-            city: post.city
+            city: post.city,
+            type: "Landmark"
         })),
     };
 }
