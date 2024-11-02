@@ -1,50 +1,42 @@
-<script lang="ts">
+<script lang="js">
     import { goto } from '$app/navigation';
 
-    export let top: string;
-    export let title: string;
-    export let searchPlaceholder: string;
-    export let items: { 
-        id: number; 
-        name: string; 
-        image: string; 
-        rating: number; 
-        reviews: number; 
-        price: number; 
-        cancellation: string; 
-        city: string; 
-    }[] = [];
-    export let cities: string[] = [];
-    export let itemRoute: string = "/item";
-    export let selectedCity: string;
-    export let onSelectItem: (id: number) => void = (id) => goto(`${itemRoute}/${id}`);
+    export let top;
+    export let title;
+    export let items = []; // Array of items, each item has slug, name, etc.
+    export let cities = []; // Array of city names for filtering
+    export let itemRoute = "/item"; // Base route for item links
+    export let selectedCity;
 
     let searchTerm = "";
-    let favoriteItems = new Set<number>();
+    let favoriteItems = new Set(); // Set to store favorite slugs
 
-    function toggleFavorite(id: number, event: Event) {
+    // Function to navigate using the slug and itemRoute
+    export let onSelectItem = (slug) => goto(`${itemRoute}/${slug}`);
+
+    // Toggle favorite status for an item
+    function toggleFavorite(slug, event) {
         event.stopPropagation();
-        if (favoriteItems.has(id)) {
-            favoriteItems.delete(id);
+        if (favoriteItems.has(slug)) {
+            favoriteItems.delete(slug);
         } else {
-            favoriteItems.add(id);
+            favoriteItems.add(slug);
         }
-        favoriteItems = favoriteItems;
+        favoriteItems = favoriteItems; // Trigger reactivity
     }
 
-    function handleSearch(event: Event) {
-        const target = event.target as HTMLInputElement;
-        searchTerm = target.value;
+    // Handle search input changes
+    function handleSearch(event) {
+        searchTerm = event.target.value;
     }
 
+    // Filter items based on search term and selected city
     $: filteredItems = items.filter(item => {
         const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCity = !selectedCity || selectedCity === item.city;
         return matchesSearch && matchesCity;
     });
 </script>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 <div style="margin-top: 20px; text-align: center;">
     <h1 style="font-size: 46px; font-weight: bold;">{top}</h1>
@@ -54,7 +46,7 @@
     <input 
         type="text" 
         class="search-input" 
-        placeholder={searchPlaceholder}
+        placeholder="Search..."
         value={searchTerm}
         on:input={handleSearch}
     />
@@ -63,7 +55,7 @@
 <div class="guarantees" style="text-align: center; margin-top: 30px; font-size: 22px">
     <span><i class="fas fa-money-bill-wave"></i> Price Match Guarantee</span> 
     <span><i class="fas fa-book-open"></i> Booking Guarantee</span> 
-    <span><i class="fas fa-bed"></i> No Credit Card Fees</span> 
+    <span><i class="fas fa-credit-card"></i> No Credit Card Fees</span> 
 </div>
 
 <div style="margin-top: 20px; padding-left: 30px;">
@@ -71,7 +63,6 @@
 </div>
 
 <div class="featured-items">
-
     {#if cities.length > 0}
         <div class="city-filters" style="margin-top: 5px; padding-left: 5px;">
             <button
@@ -98,19 +89,19 @@
             <div 
                 role="button" 
                 tabindex="0" 
-                on:click={() => onSelectItem(item.id)} 
-                on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelectItem(item.id)} 
+                on:click={() => onSelectItem(item.slug)}
+                on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelectItem(item.slug)} 
                 class="item-card"
             >
                 <button
                     type="button"
                     class="heart-button"
-                    aria-label={favoriteItems.has(item.id) ? "Remove from favorites" : "Add to favorites"}
-                    on:click={(e) => toggleFavorite(item.id, e)}
+                    aria-label={favoriteItems.has(item.slug) ? "Remove from favorites" : "Add to favorites"}
+                    on:click={(e) => toggleFavorite(item.slug, e)}
                 >
                     <i 
                         class="fas fa-heart" 
-                        class:favorite={favoriteItems.has(item.id)}
+                        class:favorite={favoriteItems.has(item.slug)}
                     ></i>
                 </button>
                 <img src={item.image} alt={item.name} class="item-image" />
@@ -156,8 +147,8 @@
 
     .guarantees {
         display: flex;
-        justify-content: center; /* ทำให้ตัวอักษรอยู่ตรงกลาง */
-        gap: 20px; /* ระยะห่างระหว่างแต่ละไอคอน */
+        justify-content: center;
+        gap: 20px;
         text-align: center;
         margin-top: 30px;
         font-size: 22px;
@@ -166,7 +157,7 @@
     .guarantees span {
         display: flex;
         align-items: center;
-        gap: 8px; /* ระยะห่างระหว่างไอคอนและข้อความ */
+        gap: 8px;
     }
 
     .city-filters {
