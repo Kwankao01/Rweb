@@ -42,7 +42,7 @@
             rating: 4.0,
             reviews: 169,
             price: 1061,
-            cancellation: "-",
+            cancellation: "",
             city: "Chiang Mai"
         },
         {
@@ -52,7 +52,7 @@
             rating: 4.5,
             reviews: 43,
             price: 3144,
-            cancellation: "-",
+            cancellation: "",
             city: "Chiang Mai"
         },
         {
@@ -72,7 +72,7 @@
             rating: 4.9,
             reviews: 342,
             price: 2400,
-            cancellation: "-",
+            cancellation: "",
             city: "Phuket"
         },
         {

@@ -28,7 +28,7 @@
         {
             id: 3,
             name: "JAY FAI",
-            image: "https://axwwgrkdco.cloudimg.io/v7/__gmpics3__/2ea032819d7a4633bf54ccba9a7ea8b4.jpg?w=700&h=700&org_if_sml=1",
+            image: "https://www.prachachat.net/wp-content/uploads/2024/10/AFP__20200715__1V85JO__v1__HighRes__ThailandLifestyleFood_0-2048x1365.jpg",
             rating: 4.3,
             reviews: 135,
             price: 1000,

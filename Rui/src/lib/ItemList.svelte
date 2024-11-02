@@ -29,10 +29,11 @@
 
 <div class="featured-items">
     <h2>{title}</h2>
+    <div style="margin-bottom: 10px;"></div> <!-- Spacer div -->
     <div class="guarantees">
         <span><i class="fas fa-money-bill-wave"></i> Price Match Guarantee</span> 
         <span><i class="fas fa-book-open"></i> Booking Guarantee</span> 
-        <span><i class="fas fa-bed"></i> Stay Guarantee</span> 
+        <span><i class="fas fa-bed"></i> No Credit Card Fees</span> 
     </div>
 
     <!-- City Filters -->
