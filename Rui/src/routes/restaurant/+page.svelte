@@ -38,6 +38,7 @@
         {
             id: 4,
             name: "Le Du",
+            slug: "le-du",
             image: "https://ledubkk.com/assets/img/Ledu.brand.jpg",
             rating: 4.9,
             reviews: 155,
@@ -65,7 +66,6 @@
             cancellation: "",
             city: "Phuket",
         }
-
     ];
 
 </script>
