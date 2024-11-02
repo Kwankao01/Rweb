@@ -1,58 +1,118 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
 
-    // Define props for flexibility and reuse
-    export let title = "Items"; // Title of the section
-    export let searchPlaceholder = "Search..."; // Placeholder for the search bar
-    export let items = []; // List of items (hotels, restaurants, landmarks, etc.)
-    export let cities = []; // List of cities for filtering
-    export let itemRoute = "/item"; // Base route for navigation, customizable
-    export let selectedCity = ""; // Initial selected city
-    export let onSelectItem = (id) => goto(`${itemRoute}/${id}`); // Default handler for item selection
+    export let top: string;
+    export let title: string;
+    export let searchPlaceholder: string;
+    export let items: { 
+        id: number; 
+        name: string; 
+        image: string; 
+        rating: number; 
+        reviews: number; 
+        price: number; 
+        cancellation: string; 
+        city: string; 
+    }[] = [];
+    export let cities: string[] = [];
+    export let itemRoute: string = "/item";
+    export let selectedCity: string;
+    export let onSelectItem: (id: number) => void = (id) => goto(`${itemRoute}/${id}`);
 
-    // Function to select a city
-    function selectCity(city: string) {
-        selectedCity = city;
+    let searchTerm = "";
+    let favoriteItems = new Set<number>();
+
+    function toggleFavorite(id: number, event: Event) {
+        event.stopPropagation();
+        if (favoriteItems.has(id)) {
+            favoriteItems.delete(id);
+        } else {
+            favoriteItems.add(id);
+        }
+        favoriteItems = favoriteItems;
     }
+
+    function handleSearch(event: Event) {
+        const target = event.target as HTMLInputElement;
+        searchTerm = target.value;
+    }
+
+    $: filteredItems = items.filter(item => {
+        const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCity = !selectedCity || selectedCity === item.city;
+        return matchesSearch && matchesCity;
+    });
 </script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-<div style="text-align: center; margin-top: 20px">
-    <h1 style="font-size: 46px; font-weight: bold;">{title}</h1>
+<div style="margin-top: 20px; text-align: center;">
+    <h1 style="font-size: 46px; font-weight: bold;">{top}</h1>
 </div>
 
 <div class="search-container">
-    <input type="text" class="search-input" placeholder={searchPlaceholder} />
-    <button class="search-button"><i class="fas fa-search"></i></button>
+    <input 
+        type="text" 
+        class="search-input" 
+        placeholder={searchPlaceholder}
+        value={searchTerm}
+        on:input={handleSearch}
+    />
+</div>
+
+<div class="guarantees" style="text-align: center; margin-top: 30px; font-size: 22px">
+    <span><i class="fas fa-money-bill-wave"></i> Price Match Guarantee</span> 
+    <span><i class="fas fa-book-open"></i> Booking Guarantee</span> 
+    <span><i class="fas fa-bed"></i> No Credit Card Fees</span> 
+</div>
+
+<div style="margin-top: 20px; padding-left: 30px;">
+    <h1 style="font-size: 30px; font-weight: 600; color: black;">{title}</h1>
 </div>
 
 <div class="featured-items">
-    <h2>{title}</h2>
-    <div style="margin-bottom: 10px;"></div> <!-- Spacer div -->
-    <div class="guarantees">
-        <span><i class="fas fa-money-bill-wave"></i> Price Match Guarantee</span> 
-        <span><i class="fas fa-book-open"></i> Booking Guarantee</span> 
-        <span><i class="fas fa-bed"></i> No Credit Card Fees</span> 
-    </div>
 
-    <!-- City Filters -->
-    <div class="city-filters">
-        {#each cities as city}
+    {#if cities.length > 0}
+        <div class="city-filters" style="margin-top: 5px; padding-left: 5px;">
             <button
-                class:selected={selectedCity === city}
-                on:click={() => selectCity(city)}
+                class:selected={!selectedCity}
+                on:click={() => selectedCity = ""}
             >
-                {city}
+                All Cities
             </button>
-        {/each}
-    </div>
+            {#each cities as city}
+                <button
+                    class:selected={selectedCity === city}
+                    on:click={() => selectedCity = city}
+                >
+                    {city}
+                </button>
+            {/each}
+        </div>
+    {/if}
 </div>
 
-<section class="item-selection">
+<section class="item-selection" style="margin-top: 5px">
     <div class="item-list">
-        {#each items.filter(item => item.city === selectedCity) as item}
-            <div class="item-card" on:click={() => onSelectItem(item.id)}>
+        {#each filteredItems as item}
+            <div 
+                role="button" 
+                tabindex="0" 
+                on:click={() => onSelectItem(item.id)} 
+                on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && onSelectItem(item.id)} 
+                class="item-card"
+            >
+                <button
+                    type="button"
+                    class="heart-button"
+                    aria-label={favoriteItems.has(item.id) ? "Remove from favorites" : "Add to favorites"}
+                    on:click={(e) => toggleFavorite(item.id, e)}
+                >
+                    <i 
+                        class="fas fa-heart" 
+                        class:favorite={favoriteItems.has(item.id)}
+                    ></i>
+                </button>
                 <img src={item.image} alt={item.name} class="item-image" />
                 <div class="item-info">
                     <h3>{item.name}</h3>
@@ -72,68 +132,56 @@
 </section>
 
 <style>
-    /* Search bar styling */
     .search-container {
         display: flex;
         justify-content: center;
-        margin-top: 10px;
+        margin-top: 20px;
     }
 
     .search-input {
-        padding: 10px 20px;                  
+        padding: 10px 20px;
         border: 1px solid #ccc;
-        border-radius: 30px;                 
-        font-size: 18px;                     
-        width: 800px;                        
-        max-width: 100%;                     
-        transition: width 0.3s ease;         
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); 
-    }
-
-    .search-button {
-        margin-left: -40px;                  
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #26796c;
+        border-radius: 30px;
         font-size: 18px;
+        width: 60%;
+        max-width: 800px;
+        transition: width 0.3s ease;
     }
 
     .featured-items {
         max-width: 1200px;
-        margin: 0 auto;
         padding: 20px;
-    }
-
-    h2 {
-        font-size: 30px;
-        font-weight: bold;
-        color: #2b2b2b;
+        text-align: left;
     }
 
     .guarantees {
         display: flex;
-        gap: 20px;
-        font-size: 18px;
-        color: #333;
-        margin-bottom: 10px;
+        justify-content: center; /* ทำให้ตัวอักษรอยู่ตรงกลาง */
+        gap: 20px; /* ระยะห่างระหว่างแต่ละไอคอน */
+        text-align: center;
+        margin-top: 30px;
+        font-size: 22px;
     }
 
-    /* City filter buttons */
+    .guarantees span {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* ระยะห่างระหว่างไอคอนและข้อความ */
+    }
+
     .city-filters {
         display: flex;
         gap: 10px;
-        margin: 20px 0;
     }
 
     .city-filters button {
-        padding: 10px 20px;
+        padding: 8px 16px;
         border: none;
         border-radius: 20px;
         background-color: #f1f1f1;
         color: #333;
         cursor: pointer;
-        font-size: 18px;
+        font-size: 16px;
         font-weight: bold;
     }
 
@@ -142,25 +190,21 @@
         color: white;
     }
 
-    .item-selection {
+    .item-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
         max-width: 1200px;
         margin: 0 auto;
         padding: 20px;
     }
 
-    .item-list {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 15px;
-    }
-
     .item-card {
-        display: flex;
-        flex-direction: column;
-        padding: 15px;
+        position: relative;
         background-color: #fff;
         border-radius: 8px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
         cursor: pointer;
         transition: transform 0.2s;
     }
@@ -171,14 +215,18 @@
 
     .item-image {
         width: 100%;
-        height: 120px;
-        border-radius: 8px;
+        height: 200px;
         object-fit: cover;
-        margin-bottom: 10px;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .item-info {
+        padding: 15px;
+        text-align: left;
     }
 
     .item-info h3 {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
         color: #26796c;
         margin: 0;
     }
@@ -192,7 +240,6 @@
         display: flex;
         align-items: center;
         color: #26796c;
-        margin-bottom: 5px;
     }
 
     .rating .fa-star {
@@ -204,25 +251,24 @@
         color: #ffcc00;
     }
 
-    .cancellation {
-        font-size: 14px;
-        color: #26796c;
+    .heart-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.8);
+        border: none;
+        border-radius: 50%;
+        padding: 8px;
+        cursor: pointer;
+        transition: color 0.3s;
     }
 
-    .price {
-        font-size: 1.2em;
-        font-weight: bold;
-        color: #26796c;
+    .heart-button i {
+        color: #ccc;
+        font-size: 20px;
     }
 
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .search-input {
-            width: 90%;                    
-        }
-
-        .item-list {
-            grid-template-columns: 1fr; 
-        }
+    .heart-button i.favorite {
+        color: #FF0000;
     }
 </style>

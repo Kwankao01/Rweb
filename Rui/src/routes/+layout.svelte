@@ -69,6 +69,12 @@
             color: black;
         }
 
+        .favorite-link {
+            margin-left: auto;
+            color: black;
+            text-decoration: none;
+        }
+
         .nav-links {
             display: flex;
             justify-content: center;
@@ -164,7 +170,18 @@
             align-items: center;
         }
 
+        #favorite {
+            display: flex;
+            padding: 0.3125rem;
+            align-items: center;
+        }
+
         #profile:hover {
+            background-color: #f1f1f1;
+            border-radius: 20px;
+        }
+
+        #favorite:hover {
             background-color: #f1f1f1;
             border-radius: 20px;
         }
@@ -175,6 +192,10 @@
             }
             
             .profile-link {
+                margin-left: 1rem;
+            }
+
+            .favorite-link {
                 margin-left: 1rem;
             }
         }
@@ -193,6 +214,10 @@
             }
 
             .profile-link {
+                order: 1;
+            }
+
+            .favorite-link {
                 order: 1;
             }
 
@@ -232,9 +257,14 @@
             <a href="/calendar" id="calendar">Calendar</a>
         </nav>
 
+        <a href="/favorite" id="favorite" class="favorite-link">
+            <i class="fas fa-heart" style="font-size: 30px;"></i>
+        </a>
+        
         <a href="/profile" id="profile" class="profile-link">
             <i class="fas fa-user-circle" style="font-size: 30px;"></i>
         </a>
+        
     </div>
 
     <nav>

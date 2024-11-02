@@ -40,6 +40,7 @@
 </script>
 
 <ItemList
+    top="Explore places"
     title="Must-Visit Landmarks"
     searchPlaceholder="Landmark or destination..."
     items={landmarks}
