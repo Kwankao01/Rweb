@@ -1,5 +1,5 @@
 <script>
-    import ItemList from '$lib/ItemList.svelte';
+    import ItemList from '$lib/itemlist.svelte';
 
     let cities = ["Chiang Rai", "Chiang Mai", "Phuket", "Chonburi", "Hatyai"];
     let selectedCity = "Chiang Rai"; // Default selected city

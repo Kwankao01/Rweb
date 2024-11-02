@@ -67,14 +67,18 @@
         }
 
     ];
+    
 
 </script>
 
-<ItemList
+<ItemList 
     title="Top Restaurants"
-    searchPlaceholder="Restaurant or destination..."
+    searchPlaceholder="Search for restaurants..."
     items={restaurants}
     cities={cities}
     selectedCity={selectedCity}
     itemRoute="/restaurant"
 />
+
+
+
