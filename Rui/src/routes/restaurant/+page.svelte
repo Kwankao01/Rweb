@@ -1,85 +1,125 @@
 <script>
     import ItemList from '$lib/ItemList.svelte';
+    export let data;
 
-    let cities = ["Bangkok", "Chiang Mai", "Phuket"];
-    let selectedCity = "Bangkok";
-    
-    let restaurants = [
-        {
-            id: 1,
-            name: "Sushi Shin",
-            image: "https://hello2day.com/wp-content/uploads/2019/06/sushi-shin-0.jpg",
-            rating: 4.8,
-            reviews: 112,
-            price: 1200,
-            cancellation: "",
-            city: "Bangkok",
-        },
-        {
-            id: 2,
-            name: "Bistro by the Park",
-            image: "https://img1.wsimg.com/isteam/ip/019a9d30-806b-4ab2-8c2d-8d2f3be68221/image-0001.JPG",
-            rating: 4.5,
-            reviews: 86,
-            price: 800,
-            cancellation: "Free cancellation",
-            city: "Chiang Mai",
-        },
-        {
-            id: 3,
-            name: "JAY FAI",
-            image: "https://www.prachachat.net/wp-content/uploads/2024/10/AFP__20200715__1V85JO__v1__HighRes__ThailandLifestyleFood_0-2048x1365.jpg",
-            rating: 4.3,
-            reviews: 135,
-            price: 1000,
-            cancellation: "",
-            city: "Bangkok",
-        },
-        {
-            id: 4,
-            name: "Le Du",
-            slug: "le-du",
-            image: "https://ledubkk.com/assets/img/Ledu.brand.jpg",
-            rating: 4.9,
-            reviews: 155,
-            price: 2000,
-            cancellation: "Free cancellation",
-            city: "Bangkok",
-        },
-        {
-            id: 5,
-            name: "Burger Joint",
-            image: "https://scontent.fbkk9-3.fna.fbcdn.net/v/t39.30808-6/327178515_717730493124899_3010554239486917480_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=tZVNIIqEf6UQ7kNvgEKdxjz&_nc_zt=23&_nc_ht=scontent.fbkk9-3.fna&_nc_gid=A7gAAhEIxWUgTvu5ZGHxLRP&oh=00_AYCtWxAqsxeX6Dtn-_Llz2JDS9dXc8eoVVDpfafYB3f71w&oe=672ABB7A",
-            rating: 4.6,
-            reviews: 98,
-            price: 1500,
-            cancellation: "Free cancellation",
-            city: "Chiang Mai",
-        },
-        {
-            id: 6,
-            name: "Red sauce",
-            image: "https://images.rosewoodhotels.com/is/image/rwhg/redsauce-007:SQUARE-LARGE-1-1",
-            rating: 4.6,
-            reviews: 120,
-            price: 2500,
-            cancellation: "",
-            city: "Phuket",
-        }
-    ];
-    
+    // Transform the landmark data to match the ItemList expected format
+    const items = data.summaries.map(restaurant => ({
+        slug: restaurant.slug,
+        name: restaurant.title,
+        image: restaurant.image,
+        rating: restaurant.rating,
+        reviews: restaurant.reviews,
+        city: restaurant.city,
+        price: 0,
+        cancellation: ""
+    }));
 
+    // Get unique cities from landmarks
+    const cities = [...new Set(items.map(item => item.city))];
+
+    // Create props for ItemList
+    const props = {
+        top: "Discover Restaurants",
+        title: "Select a Restaurant",
+        items: items,
+        cities: cities,
+        itemRoute: "/restaurant",
+        selectedCity: ""
+    };
 </script>
 
-<ItemList 
-    top="Find places to eat"
-    title="Top Restaurants"
-    searchPlaceholder="Search for restaurants..."
-    items={restaurants}
-    cities={cities}
-    selectedCity={selectedCity}
-    itemRoute="/restaurant"
-/>
+<ItemList {...props} />
 
+<style>
+    :global(.item-card) {
+        background-color: #ffffff;
+    }
 
+    :global(.item-info h3) {
+        color: #26796c;
 
+    }
+    .search-container {
+        display: flex;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    .search-input {
+        padding: 10px 20px;
+        border: 1px solid #ccc;
+        border-radius: 30px;
+        font-size: 18px;
+        width: 800px;
+        max-width: 100%;
+        transition: width 0.3s ease;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .search-button {
+        margin-left: -40px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #26796c;
+        font-size: 18px;
+    }
+
+    /* Landmark selection styling */
+    .restaurant-selection {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+        font-size: 1.8rem;
+        color: #26796c;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .restaurant-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .restaurant-card {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .restaurant-card:hover {
+        transform: scale(1.02);
+    }
+
+    .restaurant-image {
+        width: 120px;
+        height: 90px;
+        border-radius: 8px;
+        object-fit: cover;
+        margin-right: 15px;
+    }
+
+    .restaurant-info h3 {
+        font-size: 1.5rem;
+        color: #26796c;
+        margin: 0;
+    }
+
+    .restaurant-info p {
+        color: #555;
+        margin: 5px 0;
+
+    }
+</style>

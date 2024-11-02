@@ -3,15 +3,14 @@
 
     export let top;
     export let title;
-    export let items = []; // Array of items, each item has slug, name, etc.
-    export let cities = []; // Array of city names for filtering
-    export let itemRoute = "/item"; // Base route for item links
+    export let items = []; 
+    export let cities = []; 
+    export let itemRoute = "/item"; 
     export let selectedCity;
 
     let searchTerm = "";
-    let favoriteItems = new Set(); // Set to store favorite slugs
+    let favoriteItems = new Set(); 
 
-    // Function to navigate using the slug and itemRoute
     export let onSelectItem = (slug) => goto(`${itemRoute}/${slug}`);
 
     // Toggle favorite status for an item
