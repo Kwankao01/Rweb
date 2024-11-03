@@ -1,12 +1,11 @@
 <script lang="ts">
-    import { onDestroy } from 'svelte';
-    import { userStore } from '$lib/stores/userStore';
     import { goto } from '$app/navigation';
+    import { userStore } from '$lib/stores/userStore';
 
     let user;
 
     // โหลดข้อมูลผู้ใช้จาก Store
-    const unsubscribe = userStore.subscribe(value => {
+    userStore.subscribe(value => {
         user = { ...value }; // รับข้อมูลจาก Store
     });
 
@@ -14,10 +13,6 @@
     function handleEdit() {
         goto('/profile/edit'); // นำไปยังหน้า Edit Profile
     }
-
-    onDestroy(() => {
-        unsubscribe(); // ยกเลิกการสมัครรับข้อมูลเมื่อคอมโพเนนต์ถูกทำลาย
-    });
 </script>
 
 <section class="profile">
@@ -121,3 +116,4 @@
         background-color: #1f5f54;
     }
 </style>
+

@@ -10,10 +10,9 @@
         user = { ...value }; // รับข้อมูลจาก Store
     });
 
+    // ฟังก์ชันสำหรับบันทึกการเปลี่ยนแปลง
     function handleSave() {
-        console.log("Before saving:", user); // ตรวจสอบข้อมูลก่อนบันทึก
         userStore.update(current => ({ ...current, ...user })); // อัปเดตข้อมูลใน Store
-        console.log("Data saved:", user); // ตรวจสอบข้อมูลหลังจากบันทึก
         goto('/profile'); // เปลี่ยนเส้นทางไปยังหน้า Profile
     }
 
