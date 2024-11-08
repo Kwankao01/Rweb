@@ -1,18 +1,17 @@
 import { posts } from './data.js';
 
 export function load() {
-    return {
-        summaries: posts.map((post) => ({
-            slug: post.slug,
-            title: post.title,
-            image: post.image,
-            content: post.content,
-            rating: post.rating,
-            reviews: post.reviews,
-            price: post.price,
-            city: post.city,
-            cancellation: post.cancellation,
-            type: "Hotel"
-        })),
-    };
+    try {
+        const cities = [...new Set(posts.map(post => post.city))].sort();
+        return {
+            hotels: posts,
+            cities
+        };
+    } catch (error) {
+        console.error('Error loading hotel data:', error);
+        return {
+            hotels: [],
+            cities: []
+        };
+    }
 }

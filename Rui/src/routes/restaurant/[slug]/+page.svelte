@@ -1,54 +1,100 @@
 <script>
+    import ItemCard from '../../../lib/ItemCard.svelte';
     export let data;
+
+    const handleSelectItem = (item) => {
+        // Empty since we're on detail page
+    };
 </script>
+
+<div class="restaurant-container">
+    {#if data.restaurant}
+        <div class="restaurant-content">
+            <h1>{data.restaurant.title}</h1>
+            <img src={data.restaurant.image} alt={data.restaurant.title} class="restaurant-image" />
+            <div class="restaurant-details">
+                <div>{data.restaurant.content}</div>
+                <p class="rating">Rating: {data.restaurant.rating} ({data.restaurant.reviews} reviews)</p>
+                <p class="location">Location: {data.restaurant.city}</p>
+                <p class="price">Price: ฿{data.restaurant.price.toLocaleString()}</p>
+                {#if data.restaurant.cancellation}
+                    <p class="cancellation">{data.restaurant.cancellation}</p>
+                {/if}
+            </div>
+        </div>
+    {:else}
+        <p>Restaurant not found</p>
+    {/if}
+</div>
 
 <style>
     .restaurant-container {
-        max-width: 800px; /* ความกว้างสูงสุด */
-        margin: 0 auto; /* จัดกลาง */
-        padding: 20px; /* เพิ่มช่องว่างรอบ ๆ */
-        background-color: #f9f9f9; /* สีพื้นหลัง */
-        border-radius: 8px; /* มุมกลม */
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* เงา */
+        max-width: 800px; 
+        margin: 0 auto; 
+        padding: 20px; 
+        background-color: #f9f9f9; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+    }
+
+    .restaurant-content {
+        padding: 20px;
     }
 
     h1 {
-        font-size: 2.5em; /* ขนาดตัวอักษร */
-        color: #333; /* สีตัวอักษร */
-        text-align: center; /* จัดกลาง */
-        margin-bottom: 20px; /* เพิ่มช่องว่างด้านล่าง */
+        font-size: 2.5em; 
+        color: #26796c; 
+        text-align: center; 
+        margin-bottom: 20px; 
     }
 
     .restaurant-image {
-        width: 100%; /* ทำให้ภาพกว้างเต็มที่ */
-        height: auto; /* ปรับความสูงอัตโนมัติ */
-        border-radius: 8px; /* มุมกลม */
-        margin-bottom: 20px; /* เพิ่มช่องว่างด้านล่าง */
+        width: 100%; 
+        max-height: 500px; 
+        object-fit: cover;
+        border-radius: 8px; 
+        margin-bottom: 20px; 
     }
 
     .restaurant-details {
-        font-size: 1.2em; /* ขนาดตัวอักษร */
-        line-height: 1.6; /* ระยะห่างระหว่างบรรทัด */
-        color: #555; /* สีตัวอักษร */
+        font-size: 1.2em; 
+        line-height: 1.6; 
+        color: #555; 
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
     }
 
     .rating {
-        font-weight: bold; /* ทำให้ตัวอักษรหนา */
-        color: #ff9800; /* สีสำหรับเรทติ้ง */
+        font-weight: bold; 
+        color: #ff9800;
+        margin: 15px 0;
     }
 
     .location {
-        font-style: italic; /* ตัวอักษรเอียง */
-        color: #888; /* สีตัวอักษร */
+        font-style: italic; 
+        color: #666;
+        margin: 10px 0;
+    }
+
+    .price {
+        color: #26796c;
+        font-weight: bold;
+        font-size: 1.3em;
+        margin: 15px 0;
+    }
+
+    @media (max-width: 768px) {
+        .restaurant-container {
+            margin: 10px;
+        }
+        
+        h1 {
+            font-size: 2em;
+        }
+        
+        .restaurant-image {
+            max-height: 400px;
+        }
     }
 </style>
-
-<div class="restaurant-container">
-    <h1>{data.post.title}</h1>
-    <img src={data.post.image} alt="{data.post.title}" class="restaurant-image" />
-    <div class="restaurant-details">
-        <div>{@html data.post.content}</div>
-        <p class="rating">Rating: {data.post.rating} ({data.post.reviews} reviews)</p>
-        <p class="city">City: {data.post.city}</p>
-    </div>
-</div>

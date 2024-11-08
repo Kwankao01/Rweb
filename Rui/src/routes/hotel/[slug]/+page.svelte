@@ -1,54 +1,96 @@
 <script>
+    import ItemCard from '../../../lib/ItemCard.svelte';
     export let data;
+
+    const handleSelectItem = (item) => {
+        
+    };
 </script>
+
+<div class="hotel-container">
+    <div class="hotel-content">
+        <h1>{data.hotel.title}</h1>
+        <img src={data.hotel.image} alt={data.hotel.title} class="hotel-image" />
+        <div class="hotel-details">
+            <div>{data.hotel.content}</div>
+            <p class="rating">Rating: {data.hotel.rating} ({data.hotel.reviews} reviews)</p>
+            <p class="location">Location: {data.hotel.city}</p>
+            <p class="price">Price: ฿{data.hotel.price.toLocaleString()}</p>
+            {#if data.hotel.cancellation}
+                <p class="cancellation">{data.hotel.cancellation}</p>
+            {/if}
+        </div>
+    </div>
+</div>
 
 <style>
     .hotel-container {
-        max-width: 800px; /* ความกว้างสูงสุด */
-        margin: 0 auto; /* จัดกลาง */
-        padding: 20px; /* เพิ่มช่องว่างรอบ ๆ */
-        background-color: #f9f9f9; /* สีพื้นหลัง */
-        border-radius: 8px; /* มุมกลม */
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* เงา */
+        max-width: 800px; 
+        margin: 0 auto; 
+        padding: 20px; 
+        background-color: #f9f9f9; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+    }
+
+    .hotel-content {
+        padding: 20px;
     }
 
     h1 {
-        font-size: 2.5em; /* ขนาดตัวอักษร */
-        color: #333; /* สีตัวอักษร */
-        text-align: center; /* จัดกลาง */
-        margin-bottom: 20px; /* เพิ่มช่องว่างด้านล่าง */
+        font-size: 2.5em; 
+        color: #26796c; 
+        text-align: center; 
+        margin-bottom: 20px; 
     }
 
     .hotel-image {
-        width: 100%; /* ทำให้ภาพกว้างเต็มที่ */
-        height: auto; /* ปรับความสูงอัตโนมัติ */
-        border-radius: 8px; /* มุมกลม */
-        margin-bottom: 20px; /* เพิ่มช่องว่างด้านล่าง */
+        width: 100%; 
+        max-height: 500px; 
+        object-fit: cover;
+        border-radius: 8px; 
+        margin-bottom: 20px; 
     }
 
     .hotel-details {
-        font-size: 1.2em; /* ขนาดตัวอักษร */
-        line-height: 1.6; /* ระยะห่างระหว่างบรรทัด */
-        color: #555; /* สีตัวอักษร */
+        font-size: 1.2em; 
+        line-height: 1.6; 
+        color: #555; 
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
     }
 
     .rating {
-        font-weight: bold; /* ทำให้ตัวอักษรหนา */
-        color: #ff9800; /* สีสำหรับเรทติ้ง */
+        font-weight: bold; 
+        color: #ff9800;
+        margin: 15px 0;
     }
 
     .location {
-        font-style: italic; /* ตัวอักษรเอียง */
-        color: #888; /* สีตัวอักษร */
+        font-style: italic; 
+        color: #666;
+        margin: 10px 0;
+    }
+
+    .price {
+        color: #26796c;
+        font-weight: bold;
+        font-size: 1.3em;
+        margin: 15px 0;
+    }
+
+    @media (max-width: 768px) {
+        .hotel-container {
+            margin: 10px;
+        }
+        
+        h1 {
+            font-size: 2em;
+        }
+        
+        .hotel-image {
+            max-height: 400px;
+        }
     }
 </style>
-
-<div class="hotel-container">
-    <h1>{data.post.title}</h1>
-    <img src={data.post.image} alt="{data.post.title}" class="hotel-image" />
-    <div class="hotel-details">
-        <div>{@html data.post.content}</div>
-        <p class="rating">Rating: {data.post.rating} ({data.post.reviews} reviews)</p>
-        <p class="location">Location: {data.post.city}</p>
-    </div>
-</div>

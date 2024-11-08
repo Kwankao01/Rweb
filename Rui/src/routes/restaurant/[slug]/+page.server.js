@@ -1,11 +1,16 @@
-import { error } from '@sveltejs/kit';
 import { posts } from '../data.js';
 
-// @ts-ignore
 export function load({ params }) {
-    const post = posts.find((post) => post.slug === params.slug);
-
-    if (!post) throw error(404, 'Post not found');
+    const restaurant = posts.find(post => post.slug === params.slug);
     
-    return { post };
+    if (!restaurant) {
+        return {
+            status: 404,
+            error: new Error('Restaurant not found')
+        };
+    }
+
+    return {
+        restaurant
+    };
 }

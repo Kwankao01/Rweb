@@ -1,25 +1,26 @@
 <script>
     import { favorites } from '$lib/favoritesStore.js';
-    import ItemList from '$lib/ItemList.svelte';
-
+    import ItemListContainer from '$lib/ItemListContainer.svelte'; 
+    
     const types = ['Restaurant', 'Hotel', 'Landmark'];
+    let filteredItems = [];
 
-    $: filteredItems = $favorites.map(item => ({
-        ...item,
-        type: item.type || 'Landmark' // ถ้าไม่มี type ให้เป็น Landmark
-    }));
+    $: {
+        filteredItems = $favorites.map(item => ({
+            ...item,
+            type: item.type || 'Undefined' 
+        }));
+        console.log('Filtered Items:', filteredItems);
+    }
 
-    console.log('Filtered Items:', filteredItems); // เพิ่ม debug log
-
-    $: props = {
-        top: "My Favorites",
-        title: "Favorite Items",
-        items: filteredItems,
-        cities: types,
-        itemRoute: "/",
-        selectedCity: "",
-        filterType: 'type'
-    };
+    const cities = types;
 </script>
 
-<ItemList {...props} />
+<ItemListContainer 
+    items={filteredItems}  
+    {cities}
+    top="Your Favorites"
+    itemRoute="/favorite"
+    filterType="type"      
+    pageType="favorite"
+/>
