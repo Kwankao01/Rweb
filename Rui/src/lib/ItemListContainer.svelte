@@ -9,46 +9,51 @@
     export let top = "";
     export let itemRoute = "/hotel";
     export let filterType = 'city';
+    export let selectedType = "";
     export let selectedCity = "";
     export let pageType = "hotel"; 
     
     let searchTerm = "";
 
     $: selectTitle = () => {
-        switch(pageType) {
-            case 'hotel':
-                return 'Select a hotel';
-            case 'restaurant':
-                return 'Select a restaurant';
-            case 'landmark':
-                return 'Select a landmark';
-            case 'favorite':
-                return 'Your Favorites';
-            default:
-                return 'Select an item';
+        if (pageType === 'hotel') {
+            return 'Select a hotel';
+        } else if (pageType === 'restaurant') {
+            return 'Select a restaurant';
+        } else if (pageType === 'landmark') {
+            return 'Select a landmark';
+        } else if (pageType === 'favorite') {
+            return 'Your Favorites';
+        } else {
+            return 'Select an item';
         }
     }
   
-    $: console.log('Items received in ItemListContainer:', items);
-    $: console.log('Cities received:', cities);
-  
+    function onFilterSelect(filter) {
+        if (pageType === 'favorite') {
+            selectedType = filter?.toString() || "";
+        } else {
+            selectedCity = filter?.toString() || "";
+        }
+    }
+
     $: filteredItems = items.filter(item => {
         if (!item || typeof item !== 'object') return false;
         
         const matchesSearch = item.title?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter = selectedCity ? item[filterType] === selectedCity : true;
-  
+        let matchesFilter;
+        
+        if (pageType === 'favorite') {
+            matchesFilter = selectedType ? item.type === selectedType : true;
+        } else {
+            matchesFilter = selectedCity ? item[filterType] === selectedCity : true;
+        }
+
         return matchesSearch && matchesFilter;
     });
   
-    $: console.log('Filtered items:', filteredItems);
-  
     function onSearch(value) {
         searchTerm = value?.toString() || "";
-    }
-  
-    function onFilterSelect(filter) {
-        selectedCity = filter?.toString() || "";
     }
   
     function onSelectItem(slug) {
@@ -85,9 +90,10 @@
     <div class="filter-section">
         <CityFilter
             filterOptions={cities}
-            selectedFilter={selectedCity}
-            {filterType}
-            {onFilterSelect}
+            selectedFilter={pageType === 'favorite' ? selectedType : selectedCity}
+            filterType={filterType}
+            onFilterSelect={onFilterSelect}
+            {pageType}
         />
     </div>
  
@@ -104,9 +110,9 @@
             {/each}
         {/if}
     </div>
- </div>
+</div>
 
- <style>
+<style>
     .container {
         width: 100%;
         max-width: 1200px;
@@ -125,7 +131,7 @@
         font-weight: bold;
         color: #333;
         margin: 0;
-        text-align: center; /* Ensure text is centered */
+        text-align: center;
     }
 
     .search-section {

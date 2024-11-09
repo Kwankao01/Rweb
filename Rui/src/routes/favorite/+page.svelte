@@ -8,19 +8,18 @@
     $: {
         filteredItems = $favorites.map(item => ({
             ...item,
-            type: item.type || 'Undefined' 
+            type: item.type.charAt(0).toUpperCase() + item.type.slice(1) 
         }));
         console.log('Filtered Items:', filteredItems);
     }
-
-    const cities = types;
 </script>
 
 <ItemListContainer 
     items={filteredItems}  
-    {cities}
+    cities={types}        
     top="Your Favorites"
     itemRoute="/favorite"
-    filterType="type"      
+    filterType="type"     
     pageType="favorite"
+    selectedType=""       
 />

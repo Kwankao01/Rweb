@@ -3,9 +3,18 @@
   export let selectedFilter = "";
   export let filterType = 'city';
   export let onFilterSelect;
+  export let pageType = ""; 
 
   function selectFilter(filter) {
     onFilterSelect(filter);
+  }
+
+  $: allButtonText = () => {
+    if (pageType === 'favorite') {
+      return 'All Types';
+    } else {
+      return 'All Cities';
+    }
   }
 </script>
 
@@ -14,7 +23,7 @@
     class:selected={!selectedFilter}
     on:click={() => selectFilter("")}
   >
-    {filterType === 'city' ? 'All Cities' : 'All Types'}
+    {allButtonText()}
   </button>
   {#each filterOptions as filter}
     <button
@@ -25,6 +34,7 @@
     </button>
   {/each}
 </div>
+
 
 <style>
   .city-filters {

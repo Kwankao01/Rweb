@@ -32,13 +32,16 @@
             {/each}
             <span class="reviews">({item.reviews} reviews)</span>
         </div>
+        
         {#if item.type === 'landmark'}
             <p class="location">{item.location}</p>
-        {:else}
+        {:else if item.type === 'hotel' || item.type === 'restaurant'}
             {#if item.cancellation}
                 <p class="cancellation">{item.cancellation}</p>
             {/if}
-            <p class="price">From ฿ {item.price.toLocaleString()}</p>
+            {#if item.price !== undefined}
+                <p class="price">From ฿ {item.price.toLocaleString()}</p>
+            {/if}
         {/if}
         <p class="city">{item.city}</p>
     </div>
