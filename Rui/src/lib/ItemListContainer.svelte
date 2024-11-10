@@ -29,7 +29,7 @@
         }
     }
   
-    function onFilterSelect(filter) {
+    function FilterSelect(filter) {
         if (pageType === 'favorite') {
             selectedType = filter?.toString() || "";
         } else {
@@ -52,11 +52,11 @@
         return matchesSearch && matchesFilter;
     });
   
-    function onSearch(value) {
+    function Search(value) {
         searchTerm = value?.toString() || "";
     }
   
-    function onSelectItem(slug) {
+    function SelectItem(slug) {
         if (slug) {
             goto(`${itemRoute}/${slug}`);
         }
@@ -81,7 +81,7 @@
     <div class="search-section">
         <SearchBar 
             searchTerm={searchTerm} 
-            {onSearch} 
+            {Search} 
         />
     </div>
 
@@ -92,7 +92,7 @@
             filterOptions={cities}
             selectedFilter={pageType === 'favorite' ? selectedType : selectedCity}
             filterType={filterType}
-            onFilterSelect={onFilterSelect}
+            FilterSelect={FilterSelect}
             {pageType}
         />
     </div>
@@ -104,8 +104,8 @@
             </div>
         {:else}
             {#each filteredItems as item (item.slug)}
-                <div role="listitem">
-                    <ItemCard {item} {onSelectItem} />
+                <div>
+                    <ItemCard {item} {SelectItem} />
                 </div>
             {/each}
         {/if}

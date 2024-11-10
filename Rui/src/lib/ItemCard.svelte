@@ -1,19 +1,19 @@
 <script>
     import FavoriteButton from './FavoriteButton.svelte';
     export let item;
-    export let onSelectItem;
+    export let SelectItem;
   
     function handleKeyDown(event) {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        onSelectItem(item.slug);
+        SelectItem(item.slug);
       }
     }
 </script>
   
 <div 
     class="item-card" 
-    on:click={() => onSelectItem(item.slug)}
+    on:click={() => SelectItem(item.slug)}
     on:keydown={handleKeyDown}
     role="button"
     tabindex="0"

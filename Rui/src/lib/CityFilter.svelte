@@ -2,11 +2,11 @@
   export let filterOptions = []; 
   export let selectedFilter = "";
   export let filterType = 'city';
-  export let onFilterSelect;
+  export let FilterSelect;
   export let pageType = ""; 
 
   function selectFilter(filter) {
-    onFilterSelect(filter);
+    FilterSelect(filter);
   }
 
   $: allButtonText = () => {

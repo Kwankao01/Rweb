@@ -1,9 +1,9 @@
 <script>
   export let searchTerm = "";
-  export let onSearch;
+  export let Search;
 
   function handleSearch(event) {
-    onSearch(event.target.value);
+    Search(event.target.value);
   }
 </script>
 
