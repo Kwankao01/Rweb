@@ -9,7 +9,7 @@ export const posts = [
         cancellation: "",
         city: "Bangkok",
         content: "Authentic Japanese sushi experience with premium ingredients and skilled chefs.",
-        type: "restaurant",
+        type: "Restaurant",
     },
     {
         title: "Bistro by the Park",
@@ -21,7 +21,7 @@ export const posts = [
         cancellation: "Free cancellation",
         city: "Chiang Mai",
         content: "A cozy bistro with a relaxed atmosphere, offering fresh and delightful meals by the park.",
-        type: "restaurant",
+        type: "Restaurant",
     },
     {
         title: "JAY FAI",
@@ -33,7 +33,7 @@ export const posts = [
         cancellation: "",
         city: "Bangkok",
         content: "Famous for her delicious crab omelette and street food with a Michelin-star twist.",
-        type: "restaurant",
+        type: "Restaurant",
     },
     {
         title: "Le Du",
@@ -45,7 +45,7 @@ export const posts = [
         cancellation: "Free cancellation",
         city: "Bangkok",
         content: "Award-winning fine dining restaurant with seasonal Thai-inspired cuisine.",
-        type: "restaurant",
+        type: "Restaurant",
     },
     {
         title: "Burger Joint",
@@ -57,7 +57,7 @@ export const posts = [
         cancellation: "Free cancellation",
         city: "Chiang Mai",
         content: "Popular spot for delicious, juicy burgers with a variety of topping options.",
-        type: "restaurant",
+        type: "Restaurant",
     },
     {
         title: "Red Sauce",
@@ -69,6 +69,6 @@ export const posts = [
         cancellation: "",
         city: "Phuket",
         content: "Luxury Italian restaurant offering fresh pasta, seafood, and beautiful views of Phuket.",
-        type: "restaurant",
+        type: "Restaurant",
     }
 ];
