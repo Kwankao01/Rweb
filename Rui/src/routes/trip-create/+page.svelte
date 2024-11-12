@@ -1,27 +1,26 @@
+<h1 style="margin-left: 20px; font-size: 30px; font-weight: bold;">Create New Trip</h1>
+
 <script>
-  import { trips } from '$lib/store.js'; // นำเข้าจาก store
-  import { goto } from '$app/navigation'; // สำหรับการนำทาง
+// @ts-nocheck
+
+  import { trips } from '$lib/trips.js'; 
+  import { goto } from '$app/navigation'; 
 
   let tripName = '';
   let tripLocation = '';
   let startDate = '';
   let endDate = '';
-  let suggestions = []; // สำหรับเก็บรายการที่แนะนำ
+  let suggestions = []; 
 
   async function fetchLocations() {
-      if (tripLocation.length < 3) { // เริ่มค้นหาหลังจากพิมพ์ครบ 3 ตัว
-          suggestions = [];
-          return;
-      }
-
       const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${tripLocation}`);
       const locations = await response.json();
-      suggestions = locations.map(location => location.display_name); // สร้างรายการแนะนำ
+      suggestions = locations.map(location => location.display_name); 
   }
 
   async function selectLocation(location) {
-      tripLocation = location; // ตั้งค่าที่อยู่ที่เลือกใน input
-      suggestions = []; // ลบ suggestions หลังจากเลือก
+      tripLocation = location; 
+      suggestions = []; 
   }
 
   function createTrip() {
@@ -36,19 +35,18 @@
                 endDate: endDate 
               }
           ]);
-          // ล้างค่าหลังจากสร้างทริปใหม่
+
           tripName = '';
           tripLocation = '';
           startDate = '';
           endDate = '';
-          goto('/Trip-list'); // นำทางไปยังหน้า Trip-list หลังจากสร้างเสร็จ
+          goto('/Trip-list'); 
       }
   }
 </script>
 
-<h1 style="margin-left: 20px; font-size: 30px; font-weight: bold;">Create New Trip</h1>
+<form class="box trip-create" on:submit|preventDefault={createTrip}>
 
-<form class="box group-create" on:submit|preventDefault={createTrip}>
   <div class="field">
       <label class="label">Trip name</label>
       <div class="control">
@@ -91,26 +89,28 @@
   </div>
 </form>
 
+
+
 <style>
   .suggestions-list {
       list-style-type: none;
       padding: 0;
       margin: 0;
       border: 1px solid #ddd;
-      max-height: 150px; /* กำหนดความสูงสูงสุดของ suggestions */
-      overflow-y: auto; /* เพิ่มการเลื่อนเมื่อรายการยาวเกินไป */
+      max-height: 150px; 
+      overflow-y: auto; 
       position: absolute;
       z-index: 10;
-      background-color: white; /* ให้พื้นหลังของรายการ */
-      width: calc(100% - 2rem); /* ทำให้กว้างเท่ากับ input */
+      background-color: white; 
+      width: calc(100% - 2rem); 
   }
 
   .suggestions-list li {
-      padding: 8px; /* เพิ่ม padding */
-      cursor: pointer; /* แสดง cursor pointer เมื่อ hover */
+      padding: 8px; 
+      cursor: pointer; 
   }
 
   .suggestions-list li:hover {
-      background-color: #f0f0f0; /* เปลี่ยนพื้นหลังเมื่อ hover */
+      background-color: #f0f0f0;
   }
 </style>

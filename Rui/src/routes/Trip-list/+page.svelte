@@ -1,66 +1,64 @@
-<head>
-  <!-- Font Awesome CSS for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-<script lang="ts">
-  import { trips } from '$lib/store.js';
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
+<script>
+  import { trips } from '$lib/trips.js';
 
   let allTrips = [];
-  let editingTrip = null; // ข้อมูลทริปที่กำลังแก้ไข
-  let showModal = false; // แสดง/ซ่อน modal
+  let editingTrip = null;
+  let showModal = false;
+  let tripLocation = ''; 
+  let suggestions = []; 
 
-  const unsubscribe = trips.subscribe(value => {
+  trips.subscribe(value => {
     allTrips = value;
   });
 
   function openEditModal(trip) {
-    editingTrip = { ...trip }; // สำเนาข้อมูลทริปเพื่อแก้ไข
+    editingTrip = { ...trip };
+    tripLocation = trip.location; 
     showModal = true;
   }
 
   function confirmEdit() {
     const index = allTrips.findIndex(t => t.id === editingTrip.id);
     if (index !== -1) {
-      allTrips[index] = editingTrip; // อัปเดตข้อมูลทริปใน array
-      trips.set(allTrips); // อัปเดต store
+      allTrips[index] = { ...editingTrip, location: tripLocation };
+      trips.set(allTrips);
     }
     closeModal();
   }
 
   function closeModal() {
     editingTrip = null;
+    tripLocation = '';
+    suggestions = [];
     showModal = false;
   }
 
-  function navigateToTripDetails(trip) {
-    goto(`/trip/${trip.id}`); // เปลี่ยนเส้นทางไปยังหน้าแสดงรายละเอียดทริป
+  async function fetchLocations() {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${tripLocation}`);
+      const locations = await response.json();
+      suggestions = locations.map(location => location.display_name); 
   }
 
-  onMount(async () => {
-    const response = await fetch('http://localhost:5173/Trip-list');
-    if (response.ok) {
-      allTrips = await response.json();
-    } else {
-      console.error('Failed to fetch trips:', response.statusText);
-    }
-    return () => unsubscribe();
-  });
+  function selectLocation(location) {
+    tripLocation = location;
+    suggestions = [];
+  }
 </script>
 
 <h1 style="margin-left: 20px; font-size: 30px; font-weight: bold;">My Trips</h1>
+
 <main>
   {#if allTrips.length > 0}
     <ul class="trip-list">
       {#each allTrips as trip}
-        <li class="trip-item" on:click={() => navigateToTripDetails(trip)}>
+        <li class="trip-item">
           <div class="trip-details">
             <div class="trip-info">
               <div class="trip-name">{trip.name}</div>
               <div class="trip-location" style="margin-top: 20px;">
-                <i class="fas fa-map-marker-alt"></i> {trip.location} <!-- ใช้อิโมจิสีดำ -->
+                <i class="fas fa-map-marker-alt"></i> {trip.location}
               </div>
               <div class="trip-dates" style="margin-top: 20px;">
                 <span>Start Date: {trip.startDate}</span><br>
@@ -83,6 +81,17 @@
         <label>
           Trip Name:
           <input type="text" bind:value={editingTrip.name} />
+        </label>
+        <label>
+          Location:
+          <input type="text" bind:value={tripLocation} placeholder="Location..." on:input={fetchLocations} />
+          {#if suggestions.length > 0}
+            <ul class="suggestions-list">
+              {#each suggestions as suggestion}
+                <li on:click={() => selectLocation(suggestion)}>{suggestion}</li>
+              {/each}
+            </ul>
+          {/if}
         </label>
         <label>
           Start Date:
@@ -121,7 +130,6 @@
     margin: 15px 0;
     background-color: #f9f9f9;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    cursor: pointer; /* Add cursor pointer for the trip item */
   }
   .trip-details {
     display: flex;
@@ -142,7 +150,7 @@
   }
   .trip-location .fa-map-marker-alt {
     margin-right: 5px;
-    color: black; /* เปลี่ยนสีเป็นสีดำ */
+    color: black;
   }
   .edit-button {
     padding: 4px 8px;
@@ -191,5 +199,20 @@
     margin-top: 20px;
     display: flex;
     justify-content: space-between;
+  }
+  .suggestions-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 5px 0 0 0;
+    border: 1px solid #ddd;
+    max-height: 100px;
+    overflow-y: auto;
+  }
+  .suggestions-list li {
+    padding: 8px;
+    cursor: pointer;
+  }
+  .suggestions-list li:hover {
+    background-color: #f0f0f0;
   }
 </style>
