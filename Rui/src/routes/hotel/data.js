@@ -9,7 +9,7 @@ export const posts = [
         cancellation: "Free cancellation",
         city: "Chiang Rai",
         content: "Experience luxury and relaxation at The Riverie, featuring stunning views and exceptional service.",
-        type: "hotel",
+        type: "Hotel",
     },
     {
         title: "Hi Chiangrai Hotel",
@@ -21,7 +21,7 @@ export const posts = [
         cancellation: "Free cancellation",
         city: "Chiang Rai",
         content: "A modern hotel with a warm atmosphere, perfect for both business and leisure travelers.",
-        type: "hotel",
+        type: "Hotel",
     },
     {
         title: "Phowadol Resort and Spa",
@@ -33,7 +33,7 @@ export const posts = [
         cancellation: "Free cancellation",
         city: "Chiang Rai",
         content: "Enjoy a peaceful retreat with spa services and beautiful natural surroundings.",
-        type: "hotel",
+        type: "Hotel",
     },
     {
         title: "Lotus Pang Suan Kaew Hotel",
@@ -45,7 +45,7 @@ export const posts = [
         cancellation: "",
         city: "Chiang Mai",
         content: "Centrally located with easy access to local attractions and a cozy ambiance.",
-        type: "hotel",
+        type: "Hotel",
     },
     {
         title: "Le Ville Lanna Chiang Mai Gate Old Town Hotel",
@@ -57,7 +57,7 @@ export const posts = [
         cancellation: "",
         city: "Chiang Mai",
         content: "A charming hotel that blends traditional Thai style with modern comfort.",
-        type: "hotel",
+        type: "Hotel",
     },
     {
         title: "B2 Resort Boutique & Budget Hotel",
@@ -69,7 +69,7 @@ export const posts = [
         cancellation: "Free cancellation",
         city: "Chiang Mai",
         content: "Affordable and comfortable accommodations, ideal for budget travelers.",
-        type: "hotel",
+        type: "Hotel",
     },
     {
         title: "Wyndham Royal Lee Phuket",
@@ -81,7 +81,7 @@ export const posts = [
         cancellation: "",
         city: "Phuket",
         content: "Luxurious beachfront hotel with world-class amenities and breathtaking views.",
-        type: "hotel",
+        type: "Hotel",
     },
     {
         title: "Meir Jarr",
@@ -93,7 +93,7 @@ export const posts = [
         cancellation: "Free cancellation",
         city: "Phuket",
         content: "A stylish hotel offering modern conveniences in a vibrant atmosphere.",
-        type: "hotel",
+        type: "Hotel",
     },
     {
         title: "Bangsaen Heritage Hotel",
@@ -105,7 +105,7 @@ export const posts = [
         cancellation: "Free cancellation",
         city: "Chonburi",
         content: "Embrace the charm of heritage with comfortable rooms and beachfront access.",
-        type: "hotel",
+        type: "Hotel",
     },
     {
         title: "Golden Crown Grand Hotel",
@@ -117,6 +117,6 @@ export const posts = [
         cancellation: "Free cancellation",
         city: "Hatyai",
         content: "A well-equipped hotel featuring spacious rooms and excellent service.",
-        type: "hotel",
+        type: "Hotel",
     }
 ];

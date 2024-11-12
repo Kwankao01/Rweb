@@ -5,13 +5,7 @@
     const types = ['Restaurant', 'Hotel', 'Landmark'];
     let filteredItems = [];
 
-    $: {
-        filteredItems = $favorites.map(item => ({
-            ...item,
-            type: item.type.charAt(0).toUpperCase() + item.type.slice(1) 
-        }));
-        console.log('Filtered Items:', filteredItems);
-    }
+    $: filteredItems = [...$favorites];
 </script>
 
 <ItemListContainer 

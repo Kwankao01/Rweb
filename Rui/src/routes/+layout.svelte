@@ -3,10 +3,6 @@
     import { showPopup, popupMessage } from '$lib/favoritesStore.js';
     import { onMount } from 'svelte'; 
 
-    $: if ($showPopup) {
-        console.log('Layout detected popup:', $popupMessage);
-    }
-
     onMount(() => {
         document.querySelectorAll('.nav-links a').forEach(link => {
             link.addEventListener('click', function(e) {
