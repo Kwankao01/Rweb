@@ -1,18 +1,14 @@
 ### Create a new user
-GET  http://127.0.0.1:8000/users
-
-
-
 POST http://127.0.0.1:8000/users
 Content-Type: application/json
 
 {
-  "name": "Jan kim",
-  "display_name": "Jannie",
-  "email": "jannie.kim@example.com",
-  "password": "securepassword",
-  "phone_number": "0999999999",
-  "address": "110 Queens"
+  "name": "Sabrina Carpenter",
+  "display_name": "Sabrina",
+  "email": "Sabrina.C@example.com",
+  "password": "Please",
+  "phone_number": "0111111111",
+  "address": "54 London"
 }
 
 ###
@@ -22,8 +18,8 @@ POST http://127.0.0.1:8000/login
 Content-Type: application/json
 
 {
-  "email": "jannie.kim@example.com",
-  "password": "securepassword"
+  "email": "Sabrina.C@example.com",
+  "password": "Please"
 }
 
 ###
@@ -46,6 +42,6 @@ Content-Type: application/json
 ###
 
 ### Get user details
-GET http://127.0.0.1:8000/users/2
+GET http://127.0.0.1:8000/users/1
 Content-Type: application/json
 

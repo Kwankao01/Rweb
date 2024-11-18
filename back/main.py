@@ -1,19 +1,15 @@
 from fastapi import FastAPI, HTTPException, Depends
 from sqlmodel import Session, create_engine, select
-from passlib.context import CryptContext
 from pydantic import BaseModel
-from database import get_session, init_db
+from database import get_session, init_db, engine
 from models import UserDB, GroupDB, UserGroupLink, User, UserOut, GroupCreate, GroupOut
+import jwt
 
 # Initialize the database and app
-DATABASE_URL = "sqlite:///./test.db"
-engine = create_engine(DATABASE_URL, echo=True)
 init_db(engine)
-
+get_session()
 app = FastAPI()
 
-# Password hashing utility
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Login request and response models
 class LoginRequest(BaseModel):
@@ -41,18 +37,27 @@ def create_user(user: User, session: Session = Depends(get_session)):
     return db_user
 
 
-@app.post("/login", response_model=LoginResponse)
-def login(request: LoginRequest, session: Session = Depends(get_session)):
-    # Look for the user by email
-    db_user = session.exec(select(UserDB).where(UserDB.email == request.email)).first()
-    if not db_user:
+SECRET_KEY = "your-secret-key"  # Change this to a secure secret key!
+
+# Login Endpoint with Token Generation
+@app.post("/login")
+def login(user: LoginRequest, session: Session = Depends(get_session)):
+    # Fetch user from the database
+    db_user = session.exec(select(UserDB).where(UserDB.email == user.email)).first()
+    if not db_user or db_user.password != user.password:  # Compare plaintext passwords
         raise HTTPException(status_code=400, detail="Invalid email or password")
-    
-    # Verify the provided password
-    if not pwd_context.verify(request.password, db_user.password):
-        raise HTTPException(status_code=400, detail="Invalid email or password")
-    
-    return {"message": "Login successful", "user": db_user}
+
+    # Generate a JWT token
+    token = jwt.encode(
+        {
+            "user_id": db_user.id,
+        },
+        SECRET_KEY,
+        algorithm="HS256"
+    )
+
+    return {"token": token, "message": "Login successful"}
+
 
 @app.post("/groups", response_model=GroupOut)
 def create_group(group: GroupCreate, session: Session = Depends(get_session)):
@@ -82,3 +87,5 @@ def get_user(user_id: int, session: Session = Depends(get_session)):
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+
+

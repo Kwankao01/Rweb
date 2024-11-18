@@ -1,4 +1,5 @@
 <script>
+  //@ts-nocheck
   import { goto } from '$app/navigation'; // For navigation on successful login
   let email = '';
   let password = '';
