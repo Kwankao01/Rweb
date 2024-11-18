@@ -1,53 +1,91 @@
 from fastapi import FastAPI, HTTPException, Depends
 from sqlmodel import Session, create_engine, select
-from database import engine, get_session, init_db
-from models import UserDB, GroupDB, UserGroupLink, GroupCreate, UserOut, GroupOut, User
+from pydantic import BaseModel
+from database import get_session, init_db, engine
+from models import UserDB, GroupDB, UserGroupLink, User, UserOut, GroupCreate, GroupOut
+import jwt
 
-init_db()
+# Initialize the database and app
+init_db(engine)
+get_session()
 app = FastAPI()
 
-# คำสั่ง POST สำหรับสร้าง User
+
+# Login request and response models
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class LoginResponse(BaseModel):
+    message: str
+    user: UserOut = None
+
 @app.post("/users", response_model=UserOut)
 def create_user(user: User, session: Session = Depends(get_session)):
-    # สร้างผู้ใช้ใหม่
-    db_user = UserDB(name=user.name, display_name=user.display_name, email=user.email,
-                     password=user.password, phone_number=user.phone_number, address=user.address)
+    # Directly store the plaintext password
+    db_user = UserDB(
+        name=user.name,
+        display_name=user.display_name,
+        email=user.email,
+        password=user.password,  # Store password as is
+        phone_number=user.phone_number,
+        address=user.address,
+    )
     session.add(db_user)
     session.commit()
-    session.refresh(db_user)  # รีเฟรชเพื่อให้ได้ id ของผู้ใช้
+    session.refresh(db_user)
     return db_user
 
-# คำสั่ง POST สำหรับสร้าง Group
+
+SECRET_KEY = "your-secret-key"  # Change this to a secure secret key!
+
+# Login Endpoint with Token Generation
+@app.post("/login")
+def login(user: LoginRequest, session: Session = Depends(get_session)):
+    # Fetch user from the database
+    db_user = session.exec(select(UserDB).where(UserDB.email == user.email)).first()
+    if not db_user or db_user.password != user.password:  # Compare plaintext passwords
+        raise HTTPException(status_code=400, detail="Invalid email or password")
+
+    # Generate a JWT token
+    token = jwt.encode(
+        {
+            "user_id": db_user.id,
+        },
+        SECRET_KEY,
+        algorithm="HS256"
+    )
+
+    return {"token": token, "message": "Login successful"}
+
+
 @app.post("/groups", response_model=GroupOut)
 def create_group(group: GroupCreate, session: Session = Depends(get_session)):
-    # สร้างกลุ่มใหม่
     db_group = GroupDB(name=group.name)
     session.add(db_group)
     session.commit()
-    session.refresh(db_group)  # รีเฟรชเพื่อให้ได้ id ของกลุ่ม
+    session.refresh(db_group)
 
-    # เชื่อมโยงผู้ใช้กับกลุ่ม
+    # Link users to the group
     for user_id in group.user_ids:
         db_user_group = UserGroupLink(user_id=user_id, group_id=db_group.id)
         session.add(db_user_group)
 
-    session.commit()  # บันทึกการเชื่อมโยง
+    session.commit()
     return db_group
 
-# คำสั่ง GET สำหรับดึงข้อมูลกลุ่ม
 @app.get("/groups/{group_id}", response_model=GroupOut)
 def get_group(group_id: int, session: Session = Depends(get_session)):
-    # ดึงข้อมูลกลุ่ม
     db_group = session.exec(select(GroupDB).where(GroupDB.id == group_id)).first()
-    if db_group is None:
+    if not db_group:
         raise HTTPException(status_code=404, detail="Group not found")
     return db_group
 
-# คำสั่ง GET สำหรับดึงข้อมูลผู้ใช้
 @app.get("/users/{user_id}", response_model=UserOut)
 def get_user(user_id: int, session: Session = Depends(get_session)):
-    # ดึงข้อมูลผู้ใช้
     db_user = session.exec(select(UserDB).where(UserDB.id == user_id)).first()
-    if db_user is None:
+    if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+
+

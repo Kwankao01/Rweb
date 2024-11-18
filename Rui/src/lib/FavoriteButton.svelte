@@ -1,9 +1,20 @@
 <script>
   import { favorites, addToFavorites, removeFromFavorites } from '$lib/favoritesStore.js';
+  import { goto } from '$app/navigation'; // SvelteKit navigation helper
   export let item;
+
+  // Mock login status (replace this with your actual authentication logic)
+  let isLoggedIn = false; // Replace with a real check (e.g., a store or API response)
 
   function toggleFavorite(event) {
     event.stopPropagation();
+
+    // Redirect to login if not logged in
+    if (!isLoggedIn) {
+      goto('/login');
+      return;
+    }
+
     const isFavorite = $favorites.some(fav => fav.slug === item.slug);
 
     if (isFavorite) {
