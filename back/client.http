@@ -1,10 +1,51 @@
+### Create a new user
+GET  http://127.0.0.1:8000/users
+
+
+
 POST http://127.0.0.1:8000/users
+Content-Type: application/json
 
 {
-    "name": "John Doe",
-    "display_name": "johnny",
-    "email": "john@example.com",
-    "password": "password123",
-    "phone_number": "1234567890",
-    "address": "123 Main Street"
+  "name": "Jan kim",
+  "display_name": "Jannie",
+  "email": "jannie.kim@example.com",
+  "password": "securepassword",
+  "phone_number": "0999999999",
+  "address": "110 Queens"
 }
+
+###
+
+### Log in as a user
+POST http://127.0.0.1:8000/login
+Content-Type: application/json
+
+{
+  "email": "jannie.kim@example.com",
+  "password": "securepassword"
+}
+
+###
+
+### Create a group
+POST http://127.0.0.1:8000/groups
+Content-Type: application/json
+
+{
+  "name": "Developers Group",
+  "user_ids": [1]  #Replace with actual user IDs
+}
+
+###
+
+### Get group details
+GET http://127.0.0.1:8000/groups/1
+Content-Type: application/json
+
+###
+
+### Get user details
+GET http://127.0.0.1:8000/users/2
+Content-Type: application/json
+

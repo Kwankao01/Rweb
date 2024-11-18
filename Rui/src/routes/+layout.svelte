@@ -46,14 +46,15 @@
         
         <a href="/calendar" id="calendar">Calendar</a>
     </nav>
-
+    
     <a href="/favorite" id="favorite" class="favorite-link">
         <i class="fas fa-heart" style="font-size: 30px;"></i>
     </a>
-    
-    <a href="/profile" id="profile" class="profile-link">
+
+    <a href="/login" id="profile" class="profile-link">
         <i class="fas fa-user-circle" style="font-size: 30px;"></i>
     </a>
+
 </div>
 
 <nav>
