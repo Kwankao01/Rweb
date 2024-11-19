@@ -1,119 +1,94 @@
-<script lang="ts">
-    import { goto } from '$app/navigation';
-    import { userStore } from '$lib/stores/userStore';
-
-    let user;
-
-    // โหลดข้อมูลผู้ใช้จาก Store
-    userStore.subscribe(value => {
-        user = { ...value }; // รับข้อมูลจาก Store
-    });
-
-    // ฟังก์ชันเพื่อเปลี่ยนไปยังหน้าแก้ไขโปรไฟล์
-    function handleEdit() {
-        goto('/profile/edit'); // นำไปยังหน้า Edit Profile
+<script>
+    import { token, userId } from "$lib/stores/auth"; // Import token and userId from the store
+    import { onMount } from "svelte";
+  
+    let userDetails = null; // To hold user data
+    let error = null;
+  
+    // Fetch user data on page load
+    async function fetchUserDetails() {
+      const authToken = $token; // Access the token using $store syntax
+      const currentUserId = $userId;
+  
+      if (!authToken || !currentUserId) {
+        error = "User is not logged in.";
+        return;
+      }
+  
+      try {
+        const response = await fetch(`/api/users/${currentUserId}`, {
+          headers: {
+            "Authorization": `Bearer ${authToken}`,
+            "Content-Type": "application/json"
+          }
+        });
+  
+        if (!response.ok) {
+          throw new Error("Failed to fetch user details.");
+        }
+  
+        userDetails = await response.json();
+      } catch (err) {
+        error = err.message;
+      }
     }
-</script>
-
-<section class="profile">
-    <div class="profile-header">
-        <img src={user.profileImage} alt="User Profile Image" class="profile-image" />
-        <h2>{user.name}</h2>
-        <p>{user.email}</p>
+  
+    onMount(fetchUserDetails); // Fetch data when the component is mounted
+  </script>
+  
+  {#if error}
+    <div class="error">{error}</div>
+  {:else if !userDetails}
+    <div class="loading">Loading user details...</div>
+  {:else}
+    <div class="user-details">
+      <h1>User Profile</h1>
+      <p><strong>Name:</strong> {userDetails.name}</p>
+      <p><strong>Display Name:</strong> {userDetails.display_name}</p>
+      <p><strong>Email:</strong> {userDetails.email}</p>
+      <p><strong>Phone Number:</strong> {userDetails.phone_number}</p>
+      <p><strong>Address:</strong> {userDetails.address}</p>
+      <p><strong>User ID:</strong> {userDetails.id}</p>
     </div>
-
-    <div class="personal-info">
-        <h3>Personal Information</h3>
-        <ul>
-            <li><strong>Birthdate:</strong> {user.birthdate}</li>
-            <li><strong>Gender:</strong> {user.gender}</li>
-            <li><strong>Address:</strong> {user.address}</li>
-            <li><strong>Phone Number:</strong> {user.phoneNumber}</li>
-        </ul>
-    </div>
-
-    <button class="edit-button" on:click={handleEdit}>Edit Info</button>
-</section>
-
-<style>
-    .profile {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        background-color: #f9f9f9;
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  {/if}
+  
+  <style>
+    .user-details {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-
-    .profile-header {
-        text-align: center;
-        margin-bottom: 20px;
+  
+    .user-details h1 {
+      text-align: center;
+      color: #26796c;
+      margin-bottom: 1rem;
     }
-
-    .profile-image {
-        width: 120px;
-        height: 120px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 4px solid #26796c;
+  
+    .user-details p {
+      margin: 0.5rem 0;
+      font-size: 1rem;
     }
-
-    h2 {
-        font-size: 1.8rem;
-        color: #26796c;
-        margin: 10px 0;
+  
+    .user-details strong {
+      color: #26796c;
     }
-
-    p {
-        color: #555;
+  
+    .error {
+      color: red;
+      text-align: center;
+      margin-top: 2rem;
     }
-
-    .personal-info {
-        margin-bottom: 20px;
-        padding: 15px;
-        background-color: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  
+    .loading {
+      text-align: center;
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      color: #666;
     }
-
-    h3 {
-        font-size: 1.3rem;
-        color: #26796c;
-        margin-bottom: 10px;
-    }
-
-    ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    li {
-        font-size: 1rem;
-        color: #555;
-        margin-bottom: 8px;
-    }
-
-    strong {
-        color: #26796c;
-    }
-
-    .edit-button {
-        display: block;
-        width: 100%;
-        padding: 12px;
-        background-color: #26796c;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 1.1rem;
-        cursor: pointer;
-        margin-top: 20px;
-        transition: background-color 0.3s ease;
-    }
-
-    .edit-button:hover {
-        background-color: #1f5f54;
-    }
-</style>
-
+  </style>
+  

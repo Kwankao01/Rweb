@@ -1,28 +1,57 @@
 <script>
-  import { favorites, addToFavorites, removeFromFavorites } from '$lib/favoritesStore.js';
   import { goto } from '$app/navigation'; // SvelteKit navigation helper
+  import { favorites, addToFavorites, removeFromFavorites } from '$lib/favoritesStore.js';
+
   export let item;
 
-  // Mock login status (replace this with your actual authentication logic)
-  let isLoggedIn = false; // Replace with a real check (e.g., a store or API response)
+  let token = null; // Token for authentication, fetched from localStorage or API response
 
-  function toggleFavorite(event) {
-    event.stopPropagation();
+  // Check if the user is logged in
+  $: isLoggedIn = !!token;
 
-    // Redirect to login if not logged in
-    if (!isLoggedIn) {
-      goto('/login');
-      return;
-    }
+  // Function to toggle favorite
+  async function toggleFavorite(event) {
+      event.stopPropagation();
 
-    const isFavorite = $favorites.some(fav => fav.slug === item.slug);
+      if (!isLoggedIn) {
+          // Redirect to login page if not logged in
+          goto('/login');
+          return;
+      }
 
-    if (isFavorite) {
-      removeFromFavorites(item.slug);
-    } else {
-      const itemType = item.type || 'Other';
-      addToFavorites({ ...item, type: itemType });
-    }
+      // Check if the item is already a favorite
+      const isFavorite = $favorites.some((fav) => fav.slug === item.slug);
+
+      if (isFavorite) {
+          // Remove from favorites
+          removeFromFavorites(item.slug);
+          await sendFavoriteRequest(item.slug, "DELETE");
+      } else {
+          // Add to favorites
+          const itemType = item.type || 'Other';
+          addToFavorites({ ...item, type: itemType });
+          await sendFavoriteRequest(item.slug, "POST");
+      }
+  }
+
+  // Function to send favorite request to the backend
+  async function sendFavoriteRequest(slug, method) {
+      try {
+          const response = await fetch(`/api/favorites/${slug}`, {
+              method: method,
+              headers: {
+                  Authorization: `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+              },
+          });
+
+          if (!response.ok) {
+              throw new Error('Failed to update favorites');
+          }
+      } catch (error) {
+          console.error(error);
+          alert('An error occurred while updating favorites');
+      }
   }
 </script>
 

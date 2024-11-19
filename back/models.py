@@ -57,3 +57,44 @@ class GroupDB(SQLModel, table=True):
     @property
     def size(self) -> int:
         return len(self.users)  # Calculate group size based on linked users
+    
+
+class Availability(BaseModel):
+    user_id: int 
+    group_id : int
+    date : list[date]  
+
+class AvailableOut(Availability):
+    id: int
+
+class AvailableDB(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="userdb.id")  # Reference to the UserDB table
+    group_id: int = Field(foreign_key="groupdb.id")  # Reference to the GroupDB table
+    date: date
+
+class Favorite(BaseModel):
+    user_id: int
+    landmark_id: Optional[int] = None
+    hospitality_id: Optional[int] = None
+    restaurant_id: Optional[int] = None
+    transportation_id: Optional[int] = None
+
+# Output model that includes an ID
+class FavoriteOut(Favorite):
+    id: int
+
+# SQLModel for database representation
+class FavoriteDB(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="userdb.id")
+    landmark_id: Optional[int] = Field(default=None, foreign_key="landmarkdb.id")
+    hospitality_id: Optional[int] = Field(default=None, foreign_key="hospitalitydb.id")
+    restaurant_id: Optional[int] = Field(default=None, foreign_key="restaurantdb.id")
+    transportation_id: Optional[int] = Field(default=None, foreign_key="transdb.id")
+
+    user: Optional[UserDB] = Relationship(back_populates="favorites")
+    landmark: Optional["LandmarkDB"] = Relationship(back_populates="favorites")
+    hospitality: Optional["HospitalityDB"] = Relationship(back_populates="favorites")
+    restaurant: Optional["RestaurantDB"] = Relationship(back_populates="favorites")
+    transportation: Optional["TransDB"] = Relationship(back_populates="favorites") 

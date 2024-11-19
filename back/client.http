@@ -1,14 +1,15 @@
 ### Create a new user
 POST http://127.0.0.1:8000/users
+Authorization: Bearer <your-jwt-token>
 Content-Type: application/json
 
 {
-  "name": "Sabrina Carpenter",
-  "display_name": "Sabrina",
-  "email": "Sabrina.C@example.com",
-  "password": "Please",
-  "phone_number": "0111111111",
-  "address": "54 London"
+  "name": "Hailey Bieber",
+  "display_name": "Hailey",
+  "email": "Hailey.B@example.com",
+  "password": "Rhode",
+  "phone_number": "0131314141",
+  "address": "32 Quebec"
 }
 
 ###
@@ -18,8 +19,8 @@ POST http://127.0.0.1:8000/login
 Content-Type: application/json
 
 {
-  "email": "Sabrina.C@example.com",
-  "password": "Please"
+  "email": "Hailey.B@example.com",
+  "password": "Rhode"
 }
 
 ###
@@ -27,21 +28,24 @@ Content-Type: application/json
 ### Create a group
 POST http://127.0.0.1:8000/groups
 Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1fQ.LYXY7f1sZV6vbiHEyu9skdw-RL4X97nRLKHajZ0h7yw
 
 {
   "name": "Developers Group",
-  "user_ids": [1]  #Replace with actual user IDs
+  "user_ids": [4,5]
 }
 
 ###
 
 ### Get group details
 GET http://127.0.0.1:8000/groups/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1fQ.LYXY7f1sZV6vbiHEyu9skdw-RL4X97nRLKHajZ0h7yw
 Content-Type: application/json
 
 ###
 
 ### Get user details
-GET http://127.0.0.1:8000/users/1
+GET http://127.0.0.1:8000/users/5
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1fQ.LYXY7f1sZV6vbiHEyu9skdw-RL4X97nRLKHajZ0h7yw
 Content-Type: application/json
 
