@@ -1,12 +1,14 @@
 <script>
   //@ts-nocheck
   import { goto } from '$app/navigation'; // For navigation on successful login
+  import { token, userId } from "$lib/stores/auth.js"; // Import the store for token and user ID
+
   let email = '';
   let password = '';
 
   // Function to handle form submission
   async function handleLogin(event) {
-      event.preventDefault();
+      event.preventDefault(); // Prevent default form submission behavior
       try {
           const response = await fetch('/api/login', {
               method: 'POST',
@@ -21,10 +23,15 @@
           }
 
           const data = await response.json();
-          // Navigate to profile or another protected page after successful login
+
+          // Store the token and user_id in the Svelte stores
+          token.set(data.token);
+          userId.set(data.user_id);
+
+          // Navigate to a protected page (e.g., profile or dashboard) after successful login
           goto('/profile');
       } catch (error) {
-          alert(error.message);
+          alert(error.message); // Show an error message to the user
       }
   }
 </script>
