@@ -97,6 +97,18 @@ def create_group(group: GroupCreate, session: Session = Depends(get_session), us
     session.commit()
     return db_group
 
+@app.post("/users/find")
+def find_users_by_email(
+    emails: dict,
+    session: Session = Depends(get_session),
+    current_user: UserDB = Depends(get_current_user)
+):
+    users = session.exec(
+        select(UserDB)
+        .where(UserDB.email.in_(emails['emails']))
+    ).all()
+    
+    return users
 
 @app.get("/groups")
 def get_groups(session: Session = Depends(get_session), user=Depends(get_current_user)):

@@ -1,47 +1,87 @@
 <script>
-  //@ts-nocheck
-  import { onMount } from "svelte";
-  import { token, userId } from "$lib/stores/auth.js"; // Import the store for token and user ID
-  let groupName = ""; // Bind to the group name input
-  let location = ""; // Bind to the location input
-
+  import { token, userId } from "$lib/stores/auth";
+  
+  let groupName = "";
+  let location = "";
+  let userEmails = "";
+  let error = null;
+  let success = false;
+ 
   async function handleFormSubmit(event) {
-    event.preventDefault(); // Prevent the default form submission behavior
-
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("user_id");
-
-    if (!token || !userId) {
-      console.error("User is not logged in");
+    event.preventDefault();
+    error = null;
+    success = false;
+ 
+    const authToken = $token;
+    const currentUserId = $userId;
+ 
+    if (!authToken || !currentUserId) {
+      error = "User is not logged in";
       return;
     }
-
-    // Prepare the API request payload
-    const payload = {
-      name: groupName,
-      user_ids: [userId, 2, 3], // Add more user IDs if needed
-    };
-
-    // Make the API request
-    const response = await fetch("/api/groups", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (response.ok) {
+ 
+    // Parse emails into array and remove whitespace
+    const emails = userEmails.split(',').map(email => email.trim()).filter(email => email);
+ 
+    try {
+      // First fetch user IDs for the emails
+      const userResponse = await fetch("/api/users/find", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json", 
+          "Authorization": `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ emails })
+      });
+ 
+      if (!userResponse.ok) {
+        throw new Error("Failed to find users");
+      }
+ 
+      const users = await userResponse.json();
+      const userIds = users.map(user => user.id);
+ 
+      // Add current user to group
+      userIds.push(parseInt(currentUserId));
+ 
+      // Create group with found user IDs
+      const response = await fetch("/api/groups", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          name: groupName,
+          user_ids: userIds
+        })
+      });
+ 
+      if (!response.ok) {
+        throw new Error("Failed to create group");
+      }
+ 
       const data = await response.json();
-      console.log("Group created:", data);
-    } else {
-      console.error("Failed to create group");
+      success = true;
+      groupName = "";
+      location = "";
+      userEmails = "";
+      
+    } catch (err) {
+      error = err.message;
+      console.error("Error creating group:", err);
     }
   }
-</script>
-
-<form class="box group-create" on:submit|preventDefault={handleFormSubmit}>
+ </script>
+ 
+ <form class="box group-create" on:submit={handleFormSubmit}>
+  {#if error}
+    <div class="error">{error}</div>
+  {/if}
+  {#if success}
+    <div class="success">Group created successfully!</div>
+  {/if}
+ 
   <div class="field">
     <label class="label">Group name</label>
     <div class="control">
@@ -54,7 +94,7 @@
       />
     </div>
   </div>
-
+ 
   <div class="field">
     <label class="label">Location</label>
     <div class="control">
@@ -66,44 +106,44 @@
       />
     </div>
   </div>
-
+ 
+  <div class="field">
+    <label class="label">Add users by email (comma separated)</label>
+    <div class="control">
+      <textarea
+        class="input"
+        bind:value={userEmails}
+        placeholder="user1@example.com, user2@example.com..."
+      />
+    </div>
+  </div>
+ 
   <div class="button-container">
     <button class="button" type="submit">Confirm</button>
   </div>
-</form>
-
-<style>
-  .group-create {
-    max-width: 600px; /* Form width */
-    margin: 5rem auto;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.13);
+ </form>
+ 
+ <style>
+  .input {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
   }
-
-  .group-create .field {
-    margin-bottom: 1.5rem;
+ 
+  textarea.input {
+    min-height: 100px;
+    resize: vertical;
   }
-
-  /* Style for the button container */
-  .button-container {
-    text-align: center; /* Align the button to the right */
+ 
+  .error {
+    color: red;
+    margin-bottom: 1rem;
   }
-
-  /* Style for the Confirm button */
-  .group-create .button {
-    background-color: #26796c;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem; /* Padding to reduce size */
-    font-weight: bold;
-    border-radius: 6px; /* Rounded corners */
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-
-  /* Hover effect */
-  .group-create .button:hover {
-    background-color: #1f665b;
+  
+  .success {
+    color: green;
+    margin-bottom: 1rem;
   }
 </style>

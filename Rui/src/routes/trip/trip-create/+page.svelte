@@ -40,7 +40,7 @@
           tripLocation = '';
           startDate = '';
           endDate = '';
-          goto('/Trip-list'); 
+          goto('/trip/Trip-list'); 
       }
   }
 </script>
