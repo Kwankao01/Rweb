@@ -2,6 +2,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import date
+import random,string
 
 # Many-to-Many relationship table linking Users and Groups
 class UserGroupLink(SQLModel, table=True):
@@ -43,15 +44,24 @@ class GroupBase(BaseModel):
 class GroupCreate(GroupBase):
     user_ids: List[int]
 
+class GroupCreateOut(BaseModel):
+    id: int
+    name: str 
+    invite_code: str
+
 # Model for group output (includes group ID and size)
 class GroupOut(GroupBase):
     id: int
     size: int  # Number of users in the group
 
+def generate_invite_code():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+
 # Model for GroupDB table in the database
 class GroupDB(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
+    invite_code: str = Field(default_factory=generate_invite_code, unique=True)
 
     # Relationship with users
     users: List[UserDB] = Relationship(back_populates="groups", link_model=UserGroupLink)
@@ -59,6 +69,9 @@ class GroupDB(SQLModel, table=True):
     @property
     def size(self) -> int:
         return len(self.users)  # Calculate group size based on linked users
+    
+class JoinGroupRequest(BaseModel):
+    invite_code: str
     
 # Restaurants
 

@@ -4,6 +4,7 @@
   let groupName = "";
   let location = "";
   let userEmails = "";
+  let generatedInviteCode = "";
   let error = null;
   let success = false;
  
@@ -11,40 +12,31 @@
     event.preventDefault();
     error = null;
     success = false;
- 
     const authToken = $token;
     const currentUserId = $userId;
  
-    if (!authToken || !currentUserId) {
-      error = "User is not logged in";
-      return;
-    }
- 
-    // Parse emails into array and remove whitespace
-    const emails = userEmails.split(',').map(email => email.trim()).filter(email => email);
- 
     try {
-      // First fetch user IDs for the emails
-      const userResponse = await fetch("/api/users/find", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json", 
-          "Authorization": `Bearer ${authToken}`
-        },
-        body: JSON.stringify({ emails })
-      });
- 
-      if (!userResponse.ok) {
-        throw new Error("Failed to find users");
+      // Parse emails
+      const emails = userEmails.split(',').map(email => email.trim()).filter(Boolean);
+      
+      // First get user IDs for emails if any are provided
+      let allUserIds = [parseInt(currentUserId)];
+      
+      if (emails.length > 0) {
+        const userResponse = await fetch("/api/users/find", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${authToken}`
+          },
+          body: JSON.stringify({ emails })
+        });
+        
+        if (!userResponse.ok) throw new Error("Failed to find users");
+        const users = await userResponse.json();
+        allUserIds = [...allUserIds, ...users.map(user => user.id)];
       }
  
-      const users = await userResponse.json();
-      const userIds = users.map(user => user.id);
- 
-      // Add current user to group
-      userIds.push(parseInt(currentUserId));
- 
-      // Create group with found user IDs
       const response = await fetch("/api/groups", {
         method: "POST",
         headers: {
@@ -53,23 +45,21 @@
         },
         body: JSON.stringify({
           name: groupName,
-          user_ids: userIds
+          user_ids: allUserIds
         })
       });
  
-      if (!response.ok) {
-        throw new Error("Failed to create group");
-      }
- 
+      if (!response.ok) throw new Error("Failed to create group");
+      
       const data = await response.json();
+      generatedInviteCode = data.invite_code;
       success = true;
       groupName = "";
       location = "";
       userEmails = "";
-      
     } catch (err) {
+      console.error("Error:", err);
       error = err.message;
-      console.error("Error creating group:", err);
     }
   }
  </script>
@@ -78,8 +68,13 @@
   {#if error}
     <div class="error">{error}</div>
   {/if}
-  {#if success}
-    <div class="success">Group created successfully!</div>
+  
+  {#if success && generatedInviteCode}
+    <div class="success">
+      <p>Group created successfully!</p>
+      <p>Invitation Code: <strong>{generatedInviteCode}</strong></p>
+      <small>Share this code with others to join your group</small>
+    </div>
   {/if}
  
   <div class="field">
@@ -124,6 +119,14 @@
  </form>
  
  <style>
+  .box {
+    max-width: 600px;
+    margin: 5rem auto;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.13);
+  }
+ 
   .input {
     width: 100%;
     padding: 0.5rem;
@@ -140,10 +143,35 @@
   .error {
     color: red;
     margin-bottom: 1rem;
+    text-align: center;
   }
   
   .success {
     color: green;
     margin-bottom: 1rem;
+    text-align: center;
   }
-</style>
+ 
+  .button-container {
+    text-align: center;
+  }
+ 
+  .button {
+    background-color: #26796c;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+ 
+  .button:hover {
+    background-color: #1f665b;
+  }
+ 
+  .field {
+    margin-bottom: 1.5rem;
+  }
+ </style>

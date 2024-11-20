@@ -6,6 +6,7 @@ from database import get_session, init_db, engine
 from models import *
 import jwt
 
+
 # Initialize the database and app
 init_db(engine)
 get_session()
@@ -80,22 +81,51 @@ def get_current_user(request: Request, session: Session = Depends(get_session)):
     return db_user
 
 
-
-@app.post("/groups", response_model=GroupOut)
+@app.post("/groups", response_model=GroupCreateOut)
 def create_group(group: GroupCreate, session: Session = Depends(get_session), user=Depends(get_current_user)):
-    # Create the group
     db_group = GroupDB(name=group.name)
     session.add(db_group)
     session.commit()
     session.refresh(db_group)
+    
+    # Add current user to the group
+    user_group = UserGroupLink(user_id=user.id, group_id=db_group.id)
+    session.add(user_group)
 
-    # Link users to the group
+    # Add other users to the group
     for user_id in group.user_ids:
-        db_user_group = UserGroupLink(user_id=user_id, group_id=db_group.id)
-        session.add(db_user_group)
+        if user_id != user.id:  # Skip current user, already added
+            user_group = UserGroupLink(user_id=user_id, group_id=db_group.id)
+            session.add(user_group)
 
     session.commit()
-    return db_group
+    
+    return {"id": db_group.id, "name": db_group.name, "invite_code": db_group.invite_code}
+
+@app.post("/groups/join")
+def join_group(request: JoinGroupRequest, session: Session = Depends(get_session), user=Depends(get_current_user)):
+    # Find the group with the provided invite code
+    db_group = session.exec(select(GroupDB).where(GroupDB.invite_code == request.invite_code)).first()
+    
+    if not db_group:
+        raise HTTPException(status_code=404, detail="Invalid invite code")
+    
+    # Check if user is already in the group
+    existing_link = session.exec(
+        select(UserGroupLink)
+        .where(UserGroupLink.user_id == user.id)
+        .where(UserGroupLink.group_id == db_group.id)
+    ).first()
+    
+    if existing_link:
+        raise HTTPException(status_code=400, detail="User already in group")
+    
+    # Add user to the group
+    user_group = UserGroupLink(user_id=user.id, group_id=db_group.id)
+    session.add(user_group)
+    session.commit()
+    
+    return {"message": "Joined group successfully"}
 
 @app.post("/users/find")
 def find_users_by_email(
