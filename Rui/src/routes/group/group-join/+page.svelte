@@ -1,11 +1,16 @@
 <script>
   import { token } from '$lib/stores/auth';
-
+  import { goto } from '$app/navigation';
+  
   let inviteCode = '';
-
+  let error = '';
+  let success = '';
+ 
   async function handleJoinGroup() {
+    error = '';
+    success = '';
     try {
-      const response = await fetch('/groups/join', {
+      const response = await fetch('/api/groups/join', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -13,33 +18,48 @@
         },
         body: JSON.stringify({ invite_code: inviteCode })
       });
-
+ 
+      const data = await response.json();
+ 
       if (response.ok) {
-        console.log('Joined group successfully');
+        success = 'Successfully joined group!';
+        setTimeout(() => {
+          goto('/group-all'); // Redirect to groups page after success
+        }, 1500);
         inviteCode = '';
       } else {
-        console.error('Failed to join group');
+        error = data.detail || 'Failed to join group';
+        console.error('Error:', data);
       }
-    } catch (error) {
-      console.error('Error:', error);
+    } catch (err) {
+      error = err.message;
+      console.error('Error:', err);
     }
   }
-</script>
-
-<form class="box join-group">
+ </script>
+ 
+ <div class="box join-group">
+  {#if error}
+    <p class="error">{error}</p>
+  {/if}
+  
+  {#if success}
+    <p class="success">{success}</p>
+  {/if}
+  
   <div class="field">
     <label class="label">Invite Code</label>
     <div class="control">
-      <input class="input" type="text" bind:value={inviteCode} placeholder="Enter invite code" />
+      <input class="input" type="text" bind:value={inviteCode} placeholder="Enter invite code"/>
     </div>
   </div>
-
+ 
   <div class="button-container">
-    <button class="button" on:click={handleJoinGroup}>Confirm</button>
+    <button type="button" class="button" on:click={handleJoinGroup}>Confirm</button>
   </div>
-</form>
-
-<style>
+ </div>
+ 
+ <style>
   .join-group {
     max-width: 600px;
     margin: 5rem auto;
@@ -47,15 +67,15 @@
     border-radius: 8px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.13);
   }
-
+ 
   .field {
     margin-bottom: 1.5rem;
   }
-
+ 
   .button-container {
     text-align: center;
   }
-
+ 
   .button {
     background-color: #26796c;
     color: white;
@@ -66,9 +86,20 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
   }
-
+ 
   .button:hover {
     background-color: #1f665b;
   }
-</style>
-  
+ 
+  .error {
+    color: red;
+    text-align: center;
+    margin-top: 1rem;
+  }
+ 
+  .success {
+    color: green;
+    text-align: center;
+    margin-top: 1rem;
+  }
+ </style>
