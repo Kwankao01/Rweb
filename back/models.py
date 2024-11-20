@@ -1,6 +1,7 @@
 from typing import Optional, List
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel, Relationship
+from datetime import date
 
 # Many-to-Many relationship table linking Users and Groups
 class UserGroupLink(SQLModel, table=True):
@@ -32,6 +33,7 @@ class UserDB(SQLModel, table=True):
 
     # Relationship with groups
     groups: List["GroupDB"] = Relationship(back_populates="users", link_model=UserGroupLink)
+    favorites: List["FavoriteDB"] = Relationship(back_populates="user")
 
 # Base model for group input
 class GroupBase(BaseModel):
@@ -57,6 +59,71 @@ class GroupDB(SQLModel, table=True):
     @property
     def size(self) -> int:
         return len(self.users)  # Calculate group size based on linked users
+    
+# Restaurants
+
+class Restaurant(BaseModel):
+    name: str
+    address: str
+    type: str
+    rate: float = Field(default=5.0)
+ 
+class RestaurantOut(Restaurant):
+    id: int
+ 
+class RestaurantDB(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
+    name: str
+    address: str
+    type: str
+    rate: float
+    favorites: list["FavoriteDB"] = Relationship(back_populates="restaurant")
+
+class UpdateResponse(BaseModel):
+    message: str
+    restaurant: Optional[Restaurant] = None
+
+# Hospitalities
+
+class Hospitality(BaseModel):
+    name: str
+    type: str
+    address : str
+    price: int
+    rate: float = Field(default=5.0)
+
+class HospitalityOut(Hospitality):
+    id: int
+
+class HospitalityDB(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    type: str
+    address : str
+    price: int
+    rate : float
+    favorites: list["FavoriteDB"] = Relationship(back_populates="hospitality")
+
+# Landmarks
+
+class Landmark(BaseModel):
+    name: str
+    address: str
+    fee: float
+    type: str
+    rate: float = Field(default=5.0)  
+
+class LandmarkOut(Landmark):
+    id: int
+
+class LandmarkDB(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    address: str
+    fee: float
+    type: str
+    rate: float
+    favorites: list["FavoriteDB"] = Relationship(back_populates="landmark")
     
 
 class Availability(BaseModel):
@@ -91,10 +158,9 @@ class FavoriteDB(SQLModel, table=True):
     landmark_id: Optional[int] = Field(default=None, foreign_key="landmarkdb.id")
     hospitality_id: Optional[int] = Field(default=None, foreign_key="hospitalitydb.id")
     restaurant_id: Optional[int] = Field(default=None, foreign_key="restaurantdb.id")
-    transportation_id: Optional[int] = Field(default=None, foreign_key="transdb.id")
 
-    user: Optional[UserDB] = Relationship(back_populates="favorites")
+    user: UserDB = Relationship(back_populates="favorites")
     landmark: Optional["LandmarkDB"] = Relationship(back_populates="favorites")
     hospitality: Optional["HospitalityDB"] = Relationship(back_populates="favorites")
-    restaurant: Optional["RestaurantDB"] = Relationship(back_populates="favorites")
-    transportation: Optional["TransDB"] = Relationship(back_populates="favorites") 
+    restaurant: Optional["RestaurantDB"] = Relationship(back_populates="favorites") 
+

@@ -1,57 +1,56 @@
 <script>
-  import { goto } from '$app/navigation'; // SvelteKit navigation helper
-  import { favorites, addToFavorites, removeFromFavorites } from '$lib/favoritesStore.js';
+  import { goto } from '$app/navigation';
+  import { favorites, addToFavorites, removeFromFavorites } from '$lib/favoritesStore';
+  import { token } from '$lib/stores/auth.js';
 
   export let item;
 
-  let token = null; // Token for authentication, fetched from localStorage or API response
+  // Check if logged in using the token from the store
+  $: isLoggedIn = !!$token;
 
-  // Check if the user is logged in
-  $: isLoggedIn = !!token;
-
-  // Function to toggle favorite
   async function toggleFavorite(event) {
       event.stopPropagation();
 
       if (!isLoggedIn) {
-          // Redirect to login page if not logged in
           goto('/login');
           return;
       }
 
-      // Check if the item is already a favorite
       const isFavorite = $favorites.some((fav) => fav.slug === item.slug);
 
-      if (isFavorite) {
-          // Remove from favorites
-          removeFromFavorites(item.slug);
-          await sendFavoriteRequest(item.slug, "DELETE");
-      } else {
-          // Add to favorites
-          const itemType = item.type || 'Other';
-          addToFavorites({ ...item, type: itemType });
-          await sendFavoriteRequest(item.slug, "POST");
+      try {
+          if (isFavorite) {
+              await sendFavoriteRequest(item.slug, "DELETE");
+              removeFromFavorites(item.slug);
+          } else {
+              await sendFavoriteRequest(item.slug, "POST");
+              addToFavorites(item);
+          }
+      } catch (error) {
+          console.error('Failed to update favorites:', error);
+          alert('An error occurred while updating favorites');
       }
   }
 
-  // Function to send favorite request to the backend
   async function sendFavoriteRequest(slug, method) {
-      try {
-          const response = await fetch(`/api/favorites/${slug}`, {
-              method: method,
-              headers: {
-                  Authorization: `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-              },
-          });
+      // Fixed the API endpoint path to include /api/
+      const response = await fetch(`/api/favorites/${slug}`, {
+          method: method,
+          headers: {
+              'Authorization': `Bearer ${$token}`,
+              'Content-Type': 'application/json',
+          },
+          // Adding credentials to ensure cookies are sent
+          credentials: 'include'
+      });
 
-          if (!response.ok) {
-              throw new Error('Failed to update favorites');
-          }
-      } catch (error) {
-          console.error(error);
-          alert('An error occurred while updating favorites');
+      if (!response.ok) {
+          const error = await response.text();
+          console.error('Server response:', error);
+          throw new Error('Failed to update favorites');
       }
+
+      return response.json();
   }
 </script>
 
@@ -63,6 +62,7 @@
 >
   <i class="fas fa-heart" class:favorite={$favorites.some(fav => fav.slug === item.slug)}></i>
 </button>
+
 
 <style>
   .heart-button {

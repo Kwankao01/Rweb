@@ -1,8 +1,9 @@
 from fastapi import FastAPI, HTTPException, Depends,Request
+from fastapi.security import OAuth2PasswordBearer
 from sqlmodel import Session, create_engine, select
 from pydantic import BaseModel
 from database import get_session, init_db, engine
-from models import UserDB, GroupDB, UserGroupLink, User, UserOut, GroupCreate, GroupOut
+from models import *
 import jwt
 
 # Initialize the database and app
@@ -10,6 +11,7 @@ init_db(engine)
 get_session()
 app = FastAPI()
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 # Login request and response models
 class LoginRequest(BaseModel):
@@ -38,7 +40,7 @@ def create_user(user: User, session: Session = Depends(get_session)):
     return db_user
 
 
-SECRET_KEY = "your-secret-key"  # Change this to a secure secret key!
+SECRET_KEY = "boomboom"  
 
 # Login Endpoint with Token Generation
 @app.post("/login")
@@ -112,15 +114,43 @@ def get_user(user_id: int, session: Session = Depends(get_session), user=Depends
 
 
 @app.post("/api/favorites/{slug}")
-def add_favorite(slug: str, token: str = Depends(oauth2_scheme)):
-    user_id = get_current_user(token)
-    # Logic to add the favorite to the database
-    return {"message": "Added to favorites"}
+async def add_favorite(
+    slug: str, 
+    current_user: UserDB = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    # Create new favorite
+    favorite = FavoriteDB(user_id=current_user.id, slug=slug)
+    session.add(favorite)
+    try:
+        session.commit()
+        return {"message": "Added to favorites", "slug": slug}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
 
 @app.delete("/api/favorites/{slug}")
-def remove_favorite(slug: str, token: str = Depends(oauth2_scheme)):
-    user_id = get_current_user(token)
-    # Logic to remove the favorite from the database
-    return {"message": "Removed from favorites"}
+async def remove_favorite(
+    slug: str,
+    current_user: UserDB = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    # Find and remove favorite
+    favorite = session.exec(
+        select(FavoriteDB)
+        .where(FavoriteDB.user_id == current_user.id)
+        .where(FavoriteDB.slug == slug)
+    ).first()
+    
+    if not favorite:
+        raise HTTPException(status_code=404, detail="Favorite not found")
+        
+    session.delete(favorite)
+    try:
+        session.commit()
+        return {"message": "Removed from favorites", "slug": slug}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
 
 
