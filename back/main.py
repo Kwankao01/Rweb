@@ -98,12 +98,14 @@ def create_group(group: GroupCreate, session: Session = Depends(get_session), us
     return db_group
 
 
-@app.get("/groups/{group_id}", response_model=GroupOut)
-def get_group(group_id: int, session: Session = Depends(get_session), user=Depends(get_current_user)):
-    db_group = session.exec(select(GroupDB).where(GroupDB.id == group_id)).first()
-    if not db_group:
-        raise HTTPException(status_code=404, detail="Group not found")
-    return db_group
+@app.get("/groups")
+def get_groups(session: Session = Depends(get_session), user=Depends(get_current_user)):
+    user_groups = session.exec(
+        select(GroupDB)
+        .join(UserGroupLink)
+        .where(UserGroupLink.user_id == user.id)
+    ).all()
+    return user_groups
 
 @app.get("/users/{user_id}", response_model=UserOut)
 def get_user(user_id: int, session: Session = Depends(get_session), user=Depends(get_current_user)):
