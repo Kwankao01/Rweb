@@ -458,3 +458,81 @@ def delete_hotel(hotel_id: int, session: Session = Depends(get_session)):
     session.delete(db_hotel)
     session.commit()
     return UpdateResponse(message="Hotel deleted successfully")
+
+#------------- availability -----------------
+ 
+@app.post("/api/availability/{group_id}", response_model=dict)
+def add_availability(group_id: int, availability: Availability, session: Session = Depends(get_session), user=Depends(get_current_user)):
+    try:
+        group = session.get(GroupDB, group_id)
+        if not group:
+            raise HTTPException(status_code=404, detail="Group not found")
+ 
+        membership = session.exec(select(UserGroupLink).where(
+            UserGroupLink.group_id == group_id,
+            UserGroupLink.user_id == user.id
+        )).first()
+ 
+        if not membership:
+            raise HTTPException(status_code=403, detail="User is not a member")
+       
+        for date in availability.date:
+            db_availability = AvailableDB(
+                user_id=user.id,
+                group_id=group_id,
+                date=date
+            )
+            session.add(db_availability)
+ 
+        session.commit()
+        return {"message": "Availability added successfully"}
+       
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+ 
+   
+@app.get("/groups/{group_id}/available-dates/", response_model=Union[list[date], str])
+def find_perfect_dates(group_id: int, session: Session = Depends(get_session)):
+    # Check if the group exists
+    group = session.get(GroupDB, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+   
+    # Get user_ids of members in the group
+    user_ids = session.exec(
+        select(UserGroupLink.user_id).where(UserGroupLink.group_id == group_id)
+    ).all()
+   
+    if not user_ids:
+        raise HTTPException(status_code=404, detail="No members in the group")
+   
+    # Find the perfect available dates common to all users
+    available_dates = session.exec(
+        select(AvailableDB.date)
+        .where(AvailableDB.user_id.in_(user_ids))  # Select dates for the users in the group
+        .group_by(AvailableDB.date)  # Group by the date
+        .having(func.count(AvailableDB.user_id) == len(user_ids))  # Ensure all members are available on that date
+    ).all()
+ 
+    # Return available dates or a message if none found
+    return available_dates if available_dates else "No matching dates found"
+ 
+@app.put("/availability/group/{group_id}/user/{user_id}", response_model=dict)
+def update_availability(group_id: int, user_id: int, availability_data: Availability, session: Session = Depends(get_session)):
+    # Validate group and membership
+    if not session.get(GroupDB, group_id):
+        raise HTTPException(status_code=404, detail="Group not found")
+    if not session.exec(select(UserGroupLink).where(UserGroupLink.group_id == group_id, UserGroupLink.user_id == user_id)).first():
+        raise HTTPException(status_code=403, detail="User is not a member of the group")
+   
+    # Delete old availability using delete statement
+    session.exec(
+        delete(AvailableDB).where(AvailableDB.group_id == group_id, AvailableDB.user_id == user_id)
+    )
+   
+    # Insert new availability dates
+    session.bulk_save_objects([AvailableDB(user_id=user_id, group_id=group_id, date=date) for date in availability_data.date])
+   
+    session.commit()
+    return {"message": "Availability updated successfully"}
