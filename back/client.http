@@ -4,12 +4,12 @@ Authorization: Bearer <your-jwt-token>
 Content-Type: application/json
 
 {
-  "name": "Olivia Rodrigo",
-  "display_name": "Liv",
-  "email": "Olivia.R@example.com",
-  "password": "Dejavu",
-  "phone_number": "0211314141",
-  "address": "32 Cali"
+  "name": "Sabrina Carpenter",
+  "display_name": "Sabrina",
+  "email": "Sabrina.C@example.com",
+  "password": "12345",
+  "phone_number": "0988888888",
+  "address": "32 Alaska"
 }
 
 ###

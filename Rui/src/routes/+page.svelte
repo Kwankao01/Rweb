@@ -85,7 +85,7 @@
 
 <figure class="image is-large centered-figure">
     <img src="createTrip.png" alt="" style="margin-top: 5px; width: 1150px; height: auto;">
-    <a href="/trip-create" class="button">
+    <a href="/trip/trip-create" class="button">
         <i class="fas fa-plus-circle" style="color: #26796c"></i>Create Trip
     </a>
 </figure>
