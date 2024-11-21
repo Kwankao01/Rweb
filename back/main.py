@@ -339,4 +339,122 @@ async def remove_favorite(
         session.rollback()
         raise HTTPException(status_code=400, detail=str(e))
 
+# -------------------- Landmark --------------------
 
+@app.post("/landmarks/", response_model=LandmarkOut)
+def create_landmark(landmark: Landmark, session: Session = Depends(get_session)):
+    db_landmark = LandmarkDB(**landmark.dict())
+    session.add(db_landmark)
+    session.commit()
+    session.refresh(db_landmark)
+    return db_landmark
+
+@app.get("/landmarks/{landmark_id}", response_model=LandmarkOut)
+def read_landmark(landmark_id: int, session: Session = Depends(get_session)):
+    landmark = session.get(LandmarkDB, landmark_id)
+    if not landmark:
+        raise HTTPException(status_code=404, detail="Landmark not found")
+    return landmark
+
+@app.put("/landmarks/{landmark_id}", response_model=LandmarkOut)
+def update_landmark(landmark_id: int, landmark: Landmark, session: Session = Depends(get_session)):
+    db_landmark = session.get(LandmarkDB, landmark_id)
+    if not db_landmark:
+        raise HTTPException(status_code=404, detail="Landmark not found")
+    for key, value in landmark.dict().items():
+        setattr(db_landmark, key, value)
+    session.commit()
+    session.refresh(db_landmark)
+    return db_landmark
+
+@app.delete("/landmarks/{landmark_id}", response_model=LandmarkOut)
+def delete_landmark(landmark_id: int, session: Session = Depends(get_session)):
+    db_landmark = session.get(LandmarkDB, landmark_id)
+    if not db_landmark:
+        raise HTTPException(status_code=404, detail="Landmark not found")
+    session.delete(db_landmark)
+    session.commit()
+    return db_landmark
+
+# -------------------- Restaurant --------------------
+
+@app.post("/restaurants/", response_model=RestaurantOut)
+def create_restaurant(restaurant: Restaurant, session: Session = Depends(get_session)):
+    db_restaurant = RestaurantDB(**restaurant.dict())
+    session.add(db_restaurant)
+    session.commit()
+    session.refresh(db_restaurant)
+    return db_restaurant
+
+@app.get("/restaurants/{restaurant_id}", response_model=RestaurantOut)
+def read_restaurant(restaurant_id: int, session: Session = Depends(get_session)):
+    restaurant = session.get(RestaurantDB, restaurant_id)
+    if not restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    return restaurant
+
+@app.put("/restaurants/{restaurant_id}", response_model=RestaurantOut)
+def update_restaurant(restaurant_id: int, restaurant: Restaurant, session: Session = Depends(get_session)):
+    db_restaurant = session.get(RestaurantDB, restaurant_id)
+    if not db_restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    for key, value in restaurant.dict().items():
+        setattr(db_restaurant, key, value)
+    session.commit()
+    session.refresh(db_restaurant)
+    return db_restaurant
+
+@app.delete("/restaurants/{restaurant_id}", response_model=RestaurantOut)
+def delete_restaurant(restaurant_id: int, session: Session = Depends(get_session)):
+    db_restaurant = session.get(RestaurantDB, restaurant_id)
+    if not db_restaurant:
+        raise HTTPException(status_code=404, detail="Restaurant not found")
+    session.delete(db_restaurant)
+    session.commit()
+    return db_restaurant
+
+# -------------------- Hospitality --------------------
+
+@app.post("/hotels/", response_model=HotelOut)
+def create_hotel(hotel: Hotel, session: Session = Depends(get_session)):
+    db_hotel = HotelDB(**hotel.model_dump())  # สร้างอ็อบเจ็กต์ HotelDB
+    session.add(db_hotel)
+    session.commit()
+    session.refresh(db_hotel)  # ดึงข้อมูลล่าสุดจากฐานข้อมูล
+    return db_hotel
+
+@app.get("/hotels/", response_model=List[HotelOut])
+def get_hotels(session: Session = Depends(get_session)):
+    hotels = session.exec(select(HotelDB)).all()
+    return hotels
+
+@app.get("/hotels/{hotel_id}", response_model=HotelOut)
+def get_hotel(hotel_id: int, session: Session = Depends(get_session)):
+    hotel = session.get(HotelDB, hotel_id)
+    if hotel is None:
+        raise HTTPException(status_code=404, detail="Hotel not found")
+    return hotel
+
+@app.put("/hotels/{hotel_id}", response_model=UpdateResponse)
+def update_hotel(hotel_id: int, hotel: Hotel, session: Session = Depends(get_session)):
+    db_hotel = session.get(HotelDB, hotel_id)
+    if db_hotel is None:
+        raise HTTPException(status_code=404, detail="Hotel not found")
+
+    # อัพเดตข้อมูล
+    for key, value in hotel.dict().items():
+        setattr(db_hotel, key, value)
+
+    session.commit()
+    session.refresh(db_hotel)
+    return UpdateResponse(message="Hotel updated successfully", hotel=db_hotel)
+
+@app.delete("/hotels/{hotel_id}", response_model=UpdateResponse)
+def delete_hotel(hotel_id: int, session: Session = Depends(get_session)):
+    db_hotel = session.get(HotelDB, hotel_id)
+    if db_hotel is None:
+        raise HTTPException(status_code=404, detail="Hotel not found")
+
+    session.delete(db_hotel)
+    session.commit()
+    return UpdateResponse(message="Hotel deleted successfully")

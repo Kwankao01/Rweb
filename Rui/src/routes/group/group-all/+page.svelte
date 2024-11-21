@@ -45,7 +45,7 @@
 {:else}
     <div class="box-container">
         {#each groups as group}
-            <a href="/group/group-all/{group.id}" class="box">
+            <a href="/group/group-all/group-detail/[id]" class="box">
                 <img src={group.imageUrl || '/g1.jpeg'} alt={group.name}>
                 <div>{group.name}</div>
             </a>

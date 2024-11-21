@@ -49,3 +49,50 @@ GET http://127.0.0.1:8000/users/5
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo1fQ.LYXY7f1sZV6vbiHEyu9skdw-RL4X97nRLKHajZ0h7yw
 Content-Type: application/json
 
+
+### POST /landmarks/
+
+POST http://127.0.0.1:8000/landmarks/
+ 
+{
+  "slug": "phangnga",
+  "title": "Phang Nga Bay",
+  "image": "https://kampatour.com/pic/blog/images/image10(5).jpg",
+  "content": "Phang Nga Bay is renowned for its limestone karsts and emerald-green waters. It is famous for its stunning scenery, including the iconic James Bond Island and numerous caves and lagoons that can be explored by kayak. The bay is a protected area and offers a range of outdoor activities, from snorkeling to boat tours.",
+  "rating": 4.7,
+  "reviews": 45,
+  "location": "Phang Nga Province.",
+  "city": "Phang Nga",
+  "type": "Landmark",
+  "price": 500
+}
+
+POST http://127.0.0.1:8000/restaurants/
+ 
+{
+  "title": "Mikado Sushi",
+  "slug": "mikado-sushi",
+  "image": "https://images.squarespace-cdn.com/content/v1/5e0487f2-bc90-4b56-8859-fc160ab598c8/aa30257d-d47a-4935-9e3d-bfa808c7cc0b.jpeg",
+  "rating": 4.4,
+  "reviews": 56,
+  "price": 1500,
+  "cancellation": "",
+  "city": "Bangkok",
+  "content": "Authentic sushi restaurant offering high-quality raw fish and classic rolls.",
+  "type": "Restaurant"
+}
+
+POST http://127.0.0.1:8000/hotels/
+ 
+{
+  "title": "Anantara Golden Triangle Elephant Camp & Resort",
+  "slug": "anantara-golden-triangle-elephant-camp-resort",
+  "image": "https://assets.anantara.com/image/upload/q_auto,f_auto,c_limit,w_1045/media/minor/anantara/images/anantara-golden-triangle-elephant-camp--resort/offers/anantara_golden_triangle_offer_940x510.jpg",
+  "rating": 4.7,
+  "reviews": 150,
+  "price": 8300,
+  "cancellation": "Free cancellation",
+  "city": "Chiang Rai",
+  "content": "Stay in the heart of nature at this stunning resort with elephant experiences.",
+  "type": "Resort"
+}

@@ -76,68 +76,125 @@ class JoinGroupRequest(BaseModel):
     
 # Restaurants
 
+# Class สำหรับเก็บข้อมูลร้านอาหาร
 class Restaurant(BaseModel):
-    name: str
-    address: str
-    type: str
-    rate: float = Field(default=5.0)
- 
-class RestaurantOut(Restaurant):
-    id: int
- 
-class RestaurantDB(SQLModel, table=True):
-    id: int = Field(default=None, primary_key=True)
-    name: str
-    address: str
-    type: str
-    rate: float
-    favorites: list["FavoriteDB"] = Relationship(back_populates="restaurant")
+    title: str  # ชื่อร้าน
+    slug: str  # slug หรือ URL-friendly identifier
+    image: str  # รูปภาพของร้าน
+    rating: float  # คะแนนรีวิว
+    reviews: int  # จำนวนรีวิว
+    price: int  # ราคาโดยประมาณ
+    cancellation: Optional[str] = None  # ข้อความการยกเลิก
+    city: str  # เมืองที่ตั้งร้าน
+    content: str  # รายละเอียดเกี่ยวกับร้าน
+    type: str  # ประเภทของร้าน (Restaurant)
 
+# Output ที่ใช้ในการแสดงผล
+class RestaurantOut(Restaurant):
+    id: int  # id ของร้านในฐานข้อมูล
+
+# Model สำหรับบันทึกข้อมูลในฐานข้อมูล
+class RestaurantDB(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)  # ID สำหรับบันทึกในฐานข้อมูล
+    title: str  # ชื่อร้าน
+    slug: str  # slug หรือ URL-friendly identifier
+    image: str  # รูปภาพของร้าน
+    rating: float  # คะแนนรีวิว
+    reviews: int  # จำนวนรีวิว
+    price: int  # ราคาโดยประมาณ
+    cancellation: Optional[str] = None  # ข้อความการยกเลิก
+    city: str  # เมืองที่ตั้งร้าน
+    content: str  # รายละเอียดเกี่ยวกับร้าน
+    type: str  # ประเภทของร้าน (Restaurant)
+
+    # สามารถเพิ่มฟิลด์อื่นๆ เช่น favorites หากจำเป็น
+    favorites: List["FavoriteDB"] = Relationship(back_populates="restaurant")
+
+# Response สำหรับการอัพเดต
 class UpdateResponse(BaseModel):
     message: str
     restaurant: Optional[Restaurant] = None
 
+
 # Hospitalities
+# Class สำหรับเก็บข้อมูลโรงแรม
+class Hotel(BaseModel):
+    title: str  # ชื่อโรงแรม
+    slug: str  # slug หรือ URL-friendly identifier
+    image: str  # รูปภาพของโรงแรม
+    rating: float  # คะแนนรีวิว
+    reviews: int  # จำนวนรีวิว
+    price: int  # ราคาโดยประมาณต่อคืน
+    cancellation: Optional[str] = None  # ข้อความการยกเลิก
+    city: str  # เมืองที่ตั้งโรงแรม
+    content: str  # รายละเอียดเกี่ยวกับโรงแรม
+    type: str = "Hotel"  # ประเภทของสถานที่ (Hotel)
 
-class Hospitality(BaseModel):
-    name: str
-    type: str
-    address : str
-    price: int
-    rate: float = Field(default=5.0)
+# Output ที่ใช้ในการแสดงผล
+class HotelOut(Hotel):
+    id: int  # id ของโรงแรมในฐานข้อมูล
 
-class HospitalityOut(Hospitality):
-    id: int
+# Model สำหรับบันทึกข้อมูลในฐานข้อมูล
+class HotelDB(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)  # ID สำหรับบันทึกในฐานข้อมูล
+    title: str  # ชื่อโรงแรม
+    slug: str  # slug หรือ URL-friendly identifier
+    image: str  # รูปภาพของโรงแรม
+    rating: float  # คะแนนรีวิว
+    reviews: int  # จำนวนรีวิว
+    price: int  # ราคาโดยประมาณต่อคืน
+    cancellation: Optional[str] = None  # ข้อความการยกเลิก
+    city: str  # เมืองที่ตั้งโรงแรม
+    content: str  # รายละเอียดเกี่ยวกับโรงแรม
+    type: str = "Hotel"  # ประเภทของสถานที่ (Hotel)
 
-class HospitalityDB(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-    type: str
-    address : str
-    price: int
-    rate : float
-    favorites: list["FavoriteDB"] = Relationship(back_populates="hospitality")
+    # สามารถเพิ่มฟิลด์อื่นๆ เช่น favorites หากจำเป็น
+    favorites: List["FavoriteDB"] = Relationship(back_populates="hotel")
 
+# Response สำหรับการอัพเดต
+class UpdateResponse(BaseModel):
+    message: str
+    hotel: Optional[Hotel] = None
 # Landmarks
 
+# Class สำหรับเก็บข้อมูล Landmark
 class Landmark(BaseModel):
-    name: str
-    address: str
-    fee: float
-    type: str
-    rate: float = Field(default=5.0)  
+    title: str  # ชื่อของ Landmark
+    slug: str  # slug หรือ URL-friendly identifier
+    image: str  # รูปภาพของ Landmark
+    rating: float  # คะแนนรีวิว
+    reviews: int  # จำนวนรีวิว
+    price: int  # ราคาโดยประมาณ
+    cancellation: Optional[str] = None  # ข้อความการยกเลิก
+    city: str  # เมืองที่ตั้ง Landmark
+    content: str  # รายละเอียดเกี่ยวกับ Landmark
+    type: str  # ประเภท (Landmark)
 
+# Output ที่ใช้ในการแสดงผล
 class LandmarkOut(Landmark):
-    id: int
+    id: int  # id ของ Landmark ในฐานข้อมูล
 
+# Model สำหรับบันทึกข้อมูลในฐานข้อมูล
 class LandmarkDB(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str
-    address: str
-    fee: float
-    type: str
-    rate: float
-    favorites: list["FavoriteDB"] = Relationship(back_populates="landmark")
+    id: int = Field(default=None, primary_key=True)  # ID สำหรับบันทึกในฐานข้อมูล
+    title: str  # ชื่อของ Landmark
+    slug: str  # slug หรือ URL-friendly identifier
+    image: str  # รูปภาพของ Landmark
+    rating: float  # คะแนนรีวิว
+    reviews: int  # จำนวนรีวิว
+    price: int  # ราคาโดยประมาณ
+    cancellation: Optional[str] = None  # ข้อความการยกเลิก
+    city: str  # เมืองที่ตั้ง Landmark
+    content: str  # รายละเอียดเกี่ยวกับ Landmark
+    type: str  # ประเภทของ Landmark (เช่น Landmark)
+
+    # สามารถเพิ่มฟิลด์อื่นๆ เช่น favorites หากจำเป็น
+    favorites: List["FavoriteDB"] = Relationship(back_populates="landmark")
+
+# Response สำหรับการอัพเดต
+class UpdateResponse(BaseModel):
+    message: str
+    landmark: Optional[Landmark] = None
 
 # Trip
 class Trip(BaseModel):
@@ -200,11 +257,11 @@ class FavoriteDB(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="userdb.id")
     landmark_id: Optional[int] = Field(default=None, foreign_key="landmarkdb.id")
-    hospitality_id: Optional[int] = Field(default=None, foreign_key="hospitalitydb.id")
+    hotel_id: Optional[int] = Field(default=None, foreign_key="hoteldb.id")
     restaurant_id: Optional[int] = Field(default=None, foreign_key="restaurantdb.id")
 
     user: UserDB = Relationship(back_populates="favorites")
     landmark: Optional["LandmarkDB"] = Relationship(back_populates="favorites")
-    hospitality: Optional["HospitalityDB"] = Relationship(back_populates="favorites")
+    hotel: Optional["HotelDB"] = Relationship(back_populates="favorites")
     restaurant: Optional["RestaurantDB"] = Relationship(back_populates="favorites") 
 
