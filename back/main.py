@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends,Request
 from fastapi.security import OAuth2PasswordBearer
+from typing import Union
+from sqlalchemy import func, delete
 from sqlmodel import Session, create_engine, select
 from pydantic import BaseModel
 from database import get_session, init_db, engine
@@ -156,6 +158,146 @@ def get_user(user_id: int, session: Session = Depends(get_session), user=Depends
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
+# Trip
+
+@app.post("/trips/", response_model=TripOut)
+def create_trip(trip: Trip, session: Session = Depends(get_session)):
+    if not session.get(GroupDB, trip.group_id):
+        raise HTTPException(status_code=404, detail="Group not found")
+
+    trip_db = TripDB(**trip.model_dump())
+    session.add(trip_db)
+    session.commit()
+    session.refresh(trip_db)
+
+    return TripOut(**trip_db.model_dump(), duration=trip_db.duration(), countdown=trip_db.countdown())
+
+@app.get("/trips/", response_model=list[TripOut])
+def get_all_trips(session: Session = Depends(get_session), user=Depends(get_current_user)):
+    user_groups = select(GroupDB.id).join(UserGroupLink).where(UserGroupLink.user_id == user.id)
+    trips = session.exec(select(TripDB).where(TripDB.group_id.in_(user_groups))).all()
+    return [TripOut(**trip.model_dump(), duration=trip.duration(), countdown=trip.countdown()) for trip in trips]
+
+@app.put("/trips/{trip_id}", response_model=TripOut)
+def update_trip(trip_id: int, trip: Trip, session: Session = Depends(get_session)):
+    existing_trip = session.get(TripDB, trip_id)
+    if not existing_trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+
+    # Update the trip details
+    for key, value in trip.model_dump().items():
+        setattr(existing_trip, key, value)
+
+    session.add(existing_trip)
+    session.commit()
+    session.refresh(existing_trip)
+
+    return TripOut(**existing_trip.model_dump(), duration=existing_trip.duration(), countdown=existing_trip.countdown())
+
+@app.delete("/trips/{trip_id}", response_model=dict)
+def delete_trip(trip_id: int, session: Session = Depends(get_session)):
+    trip = session.get(TripDB, trip_id)
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+
+    session.delete(trip)
+    session.commit()
+
+    return {"message": f"Trip {trip_id} deleted successfully"}
+
+# availability
+
+@app.post("/availability", response_model=dict)
+def add_availability(availability: Availability, session: Session = Depends(get_session)):
+    try:
+        # Check if group exists
+        group = session.get(GroupDB, availability.group_id)
+        if not group:
+            raise HTTPException(status_code=404, detail="Group not found")
+
+        # Check if user is a member of the group
+        membership = session.exec(select(UserGroupLink).where(
+            UserGroupLink.group_id == availability.group_id,
+            UserGroupLink.user_id == availability.user_id
+        )).first()
+
+        if not membership:
+            raise HTTPException(status_code=403, detail="User is not a member of the group")
+        
+        # Check if availability already exists for each date
+        existing_availabilities = session.exec(select(AvailableDB).where(
+            AvailableDB.user_id == availability.user_id,
+            AvailableDB.group_id == availability.group_id,
+            AvailableDB.date.in_(availability.date)
+        )).all()
+
+        existing_dates = {av.date for av in existing_availabilities}
+        new_dates = set(availability.date) - existing_dates
+
+        if not new_dates:
+            raise HTTPException(status_code=400, detail="Availability already exists for the provided dates")
+
+        # Add availability for each new date
+        for date in new_dates:
+            db_availability = AvailableDB(user_id=availability.user_id, group_id=availability.group_id, date=date)
+            session.add(db_availability)
+
+        session.commit()
+
+        return {"message": "Availability added successfully"}
+
+    except Exception as e:
+        print(f"Error: {e}")  # Log the error
+        raise HTTPException(status_code=500, detail=str(e))
+
+    
+@app.get("/groups/{group_id}/available-dates/", response_model=Union[list[date], str])
+def find_perfect_dates(group_id: int, session: Session = Depends(get_session)):
+    # Check if the group exists
+    group = session.get(GroupDB, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Get user_ids of members in the group
+    user_ids = session.exec(
+        select(UserGroupLink.user_id).where(UserGroupLink.group_id == group_id)
+    ).all()
+    
+    if not user_ids:
+        raise HTTPException(status_code=404, detail="No members in the group")
+    
+    # Find the perfect available dates common to all users
+    available_dates = session.exec(
+        select(AvailableDB.date)
+        .where(AvailableDB.user_id.in_(user_ids))  # Select dates for the users in the group
+        .group_by(AvailableDB.date)  # Group by the date
+        .having(func.count(AvailableDB.user_id) == len(user_ids))  # Ensure all members are available on that date
+    ).all()
+
+    # Return available dates or a message if none found
+    return available_dates if available_dates else "No matching dates found"
+
+@app.put("/availability/group/{group_id}/user/{user_id}", response_model=dict)
+def update_availability(group_id: int, user_id: int, availability_data: Availability, session: Session = Depends(get_session)):
+    # Validate group and membership
+    if not session.get(GroupDB, group_id):
+        raise HTTPException(status_code=404, detail="Group not found")
+    if not session.exec(select(UserGroupLink).where(UserGroupLink.group_id == group_id, UserGroupLink.user_id == user_id)).first():
+        raise HTTPException(status_code=403, detail="User is not a member of the group")
+    
+    # Delete old availability using delete statement
+    session.exec(
+        delete(AvailableDB).where(AvailableDB.group_id == group_id, AvailableDB.user_id == user_id)
+    )
+    
+    # Insert new availability dates
+    session.bulk_save_objects([AvailableDB(user_id=user_id, group_id=group_id, date=date) for date in availability_data.date])
+    
+    session.commit()
+    return {"message": "Availability updated successfully"}
+
+
+#fav
 
 @app.post("/api/favorites/{slug}")
 async def add_favorite(

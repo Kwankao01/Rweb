@@ -65,6 +65,7 @@ class GroupDB(SQLModel, table=True):
 
     # Relationship with users
     users: List[UserDB] = Relationship(back_populates="groups", link_model=UserGroupLink)
+    trips: List["TripDB"] = Relationship(back_populates="group")
 
     @property
     def size(self) -> int:
@@ -137,7 +138,37 @@ class LandmarkDB(SQLModel, table=True):
     type: str
     rate: float
     favorites: list["FavoriteDB"] = Relationship(back_populates="landmark")
+
+# Trip
+class Trip(BaseModel):
+    name: str
+    destination: str
+    start: date
+    end: date
+    group_id: int  
+ 
+class TripDB(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    destination: str
+    start: date
+    end: date
+    group_id: int = Field(foreign_key="groupdb.id")  
+    group: Optional["GroupDB"] = Relationship(back_populates="trips")  
+ 
+    def duration(self) -> int:
+        return (self.end - self.start).days + 1
+ 
+    def countdown(self) -> int:
+        today = date.today()
+        return max(0, (self.start - today).days)
+ 
+class TripOut(Trip):
+    id: int
+    duration: int
+    countdown: int
     
+#Avalible
 
 class Availability(BaseModel):
     user_id: int 
