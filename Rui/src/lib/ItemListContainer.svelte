@@ -3,7 +3,7 @@
     import SearchBar from '$lib/SearchBar.svelte';
     import CityFilter from '$lib/CityFilter.svelte';
     import ItemCard from '$lib/ItemCard.svelte';
-  
+
     export let items = [];
     export let cities = [];
     export let top = "";
@@ -11,30 +11,34 @@
     export let filterType = 'city';
     export let selectedType = "";
     export let selectedCity = "";
-    export let pageType = "hotel"; 
-    
+    export let pageType = "hotel";
+
     let searchTerm = "";
+    let visibleItems = []; // รายการที่แสดงบนหน้า
+    let loading = true; // สำหรับ loading spinner
+    const itemsPerPage = 8; // จำนวนรายการต่อหน้า
+    let currentPage = 1; // หน้าปัจจุบัน
 
     $: selectTitle = () => {
-        if (pageType === 'hotel') {
-            return 'Select a hotel';
-        } else if (pageType === 'restaurant') {
-            return 'Select a restaurant';
-        } else if (pageType === 'landmark') {
-            return 'Select a landmark';
-        } else if (pageType === 'favorite') {
-            return 'Your Favorites';
-        } else {
-            return 'Select an item';
-        }
-    }
-  
+        if (pageType === 'hotel') return 'Select a hotel';
+        if (pageType === 'restaurant') return 'Select a restaurant';
+        if (pageType === 'landmark') return 'Select a landmark';
+        if (pageType === 'favorite') return 'Your Favorites';
+        return 'Select an item';
+    };
+
     function FilterSelect(filter) {
         if (pageType === 'favorite') {
             selectedType = filter?.toString() || "";
         } else {
             selectedCity = filter?.toString() || "";
         }
+        resetVisibleItems();
+    }
+
+    function Search(value) {
+        searchTerm = value?.toString() || "";
+        resetVisibleItems();
     }
 
     $: filteredItems = items.filter(item => {
@@ -51,16 +55,33 @@
 
         return matchesSearch && matchesFilter;
     });
-  
-    function Search(value) {
-        searchTerm = value?.toString() || "";
+
+    // โหลดข้อมูลเริ่มต้น
+    function resetVisibleItems() {
+        visibleItems = [];
+        currentPage = 1;
+        loadMore();
     }
-  
+
+    function loadMore() {
+        loading = true;
+        const start = (currentPage - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+
+        // เพิ่มรายการใหม่ทีละชุด
+        setTimeout(() => {
+            visibleItems = [...visibleItems, ...filteredItems.slice(start, end)];
+            currentPage++;
+            loading = false;
+        }, 500); // เพิ่ม delay เล็กน้อยเพื่อแสดง loading spinner
+    }
+
     function SelectItem(slug) {
-        if (slug) {
-            goto(`${itemRoute}/${slug}`);
-        }
+        if (slug) goto(`${itemRoute}/${slug}`);
     }
+
+    // โหลดข้อมูลเริ่มต้นเมื่อเปิดหน้า
+    resetVisibleItems();
 </script>
 
 <div class="container">
@@ -98,18 +119,26 @@
     </div>
  
     <div class="item-list" role="list">
-        {#if filteredItems.length === 0}
+        {#if visibleItems.length === 0 && !loading}
             <div class="no-results">
                 <p>No items found matching your criteria</p>
             </div>
         {:else}
-            {#each filteredItems as item (item.slug)}
+            {#each visibleItems as item (item.slug)}
                 <div>
                     <ItemCard {item} {SelectItem} />
                 </div>
             {/each}
         {/if}
     </div>
+
+    {#if loading}
+        <!-- Spinner สำหรับ loading -->
+        <div class="loading-spinner" aria-label="Loading items..."></div>
+    {:else if visibleItems.length < filteredItems.length}
+        <!-- ปุ่มโหลดเพิ่มเติม -->
+        <button class="load-more" on:click={loadMore}>Load More</button>
+    {/if}
 </div>
 
 <style>
@@ -181,6 +210,29 @@
         color: #666;
         font-size: 1.1rem;
     }
+    .loading-spinner {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 40px auto;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #26796c;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+    }
+    .load-more {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background-color: #26796c;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+    }
 
     @media (max-width: 768px) {
         .header h1 {
@@ -196,6 +248,7 @@
             margin: 10px 0;
         }
     }
+    
 
     @media (max-width: 480px) {
         .container {
@@ -206,4 +259,14 @@
             font-size: 28px;
         }
     }
+
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+    }
+    to {
+            transform: rotate(360deg);
+    }
+}
+    
 </style>

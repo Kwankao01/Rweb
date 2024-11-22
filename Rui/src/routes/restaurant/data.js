@@ -50,7 +50,7 @@ export const posts = [
     {
         title: "Burger Joint",
         slug: "burger-joint",
-        image: "https://scontent.fbkk9-3.fna.fbcdn.net/v/t39.30808-6/327178515_717730493124899_3010554239486917480_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=tZVNIIqEf6UQ7kNvgEKdxjz&_nc_zt=23&_nc_ht=scontent.fbkk9-3.fna&_nc_gid=A7gAAhEIxWUgTvu5ZGHxLRP&oh=00_AYCtWxAqsxeX6Dtn-_Llz2JDS9dXc8eoVVDpfafYB3f71w&oe=672ABB7A",
+        image: "https://static.wixstatic.com/media/6818fc_517f28b03f424dd19d85768c53a23027~mv2.jpg/v1/crop/x_99,y_11,w_1758,h_1122/fill/w_640,h_408,al_c,q_80,usm_0.66_1.00_0.01,enc_auto/3.jpg",
         rating: 4.6,
         reviews: 98,
         price: 1500,
@@ -70,5 +70,89 @@ export const posts = [
         city: "Phuket",
         content: "Luxury Italian restaurant offering fresh pasta, seafood, and beautiful views of Phuket.",
         type: "Restaurant",
+    },
+    {
+        title: "Sala Rim Nam",
+        slug: "sala-rim-nam",
+        image: "https://static.bangkokpost.com/media/content/20230803/4848467.jpg",
+        rating: 4.5,
+        reviews: 140,
+        price: 3000,
+        cancellation: "Free cancellation",
+        city: "Bangkok",
+        content: "Fine dining by the river with authentic Thai cuisine and an elegant atmosphere.",
+        type: "Restaurant"
+    },
+    {
+        title: "Kanom Jeen Baan Suan",
+        slug: "kanom-jeen-baan-suan",
+        image: "https://api.tourismthailand.org/upload/live/business_content_main_image_desktop/10752/2aef4043ea09175cc836fdc29dd1dd2c.jpeg",
+        rating: 4.5,
+        reviews: 85,
+        price: 500,
+        cancellation: "",
+        city: "Chiang Mai",
+        content: "Relaxing garden eatery specializing in flavorful Thai rice noodles with unique curries.",
+        type: "Restaurant"
+    },
+    {
+        title: "Blue Elephant Phuket",
+        slug: "blue-elephant-phuket",
+        image: "https://blueelephant.com/wp-content/uploads/2022/02/45paint-1.jpg",
+        rating: 4.7,
+        reviews: 200,
+        price: 3500,
+        cancellation: "Free cancellation",
+        city: "Phuket",
+        content: "A luxurious dining experience serving royal Thai cuisine in a historic mansion.",
+        type: "Restaurant"
+    },
+    {
+        title: "The Good View",
+        slug: "the-good-view",
+        image: "https://siam2nite.media/rggU1jvsZd1WSLQL8wcJ5O57tgk=/1280x720/smart/locations/1099/cover_large_p1e59b7r36jj2lu0fi68621g366.jpg",
+        rating: 4.6,
+        reviews: 190,
+        price: 900,
+        cancellation: "Free cancellation",
+        city: "Chiang Mai",
+        content: "Lively riverside restaurant offering Thai and international dishes with live music.",
+        type: "Restaurant"
+    },
+    {
+        title: "Pa Ord Noodle",
+        slug: "pa-ord-noodle",
+        image: "https://miro.medium.com/v2/resize:fit:2000/1*hMvm3TsFIZsD--kO0wWwSg.jpeg",
+        rating: 4.4,
+        reviews: 75,
+        price: 300,
+        cancellation: "",
+        city: "Bangkok",
+        content: "Beloved by locals for its flavorful boat noodles and traditional street food ambiance.",
+        type: "Restaurant"
+    },
+    {
+        title: "Wagyu Bistro",
+        slug: "wagyu-bistro",
+        image: "https://131274363.cdn6.editmysite.com/uploads/1/3/1/2/131274363/s556350789216344023_p352_i2_w4032.jpeg?width=2560",
+        rating: 4.7,
+        reviews: 112,
+        price: 2200,
+        cancellation: "",
+        city: "Phuket",
+        content: "Specializes in premium-grade Wagyu beef and contemporary fusion dishes.",
+        type: "Restaurant"
+    },
+    {
+        title: "Rimtalay Seafood",
+        slug: "rimtalay-seafood",
+        image: "https://whatsonpattaya.wordpress.com/wp-content/uploads/2017/05/p1.jpg?w=682",
+        rating: 4.5,
+        reviews: 180,
+        price: 1000,
+        cancellation: "Free cancellation",
+        city: "Phuket",
+        content: "Fresh and delicious seafood served right by the beach with stunning ocean views.",
+        type: "Restaurant"
     }
 ];
