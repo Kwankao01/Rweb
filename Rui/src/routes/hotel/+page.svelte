@@ -4,7 +4,7 @@
 
     $: ({ hotels, cities } = data);
     
-    $: console.log('Hotels data:', hotels);
+    $: console.log('Hotel data:', hotels);
     $: console.log('Cities data:', cities);
 </script>
 

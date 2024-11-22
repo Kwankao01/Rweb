@@ -105,7 +105,11 @@
                 <span class="countdown">Days until trip: {trip.countdown}</span>
               </div>
             </div>
-            <button on:click={() => openEditModal(trip)} class="edit-button">Edit</button>
+            <div>
+              <button on:click={() => openEditModal(trip)} class="edit-button">Edit</button>
+              <!-- Link to trip details -->
+              <a href={`/trip/${trip.id}`} class="details-button">View Details</a>
+            </div>
           </div>
         </li>
       {/each}

@@ -1,14 +1,16 @@
-import { posts } from './data.js';
-
-export function load() {
+export async function load({ fetch }) {
     try {
-        const cities = [...new Set(posts.map(post => post.city))].sort();
+        const restaurantResponse = await fetch('/api/landmarks/');
+        const landmarks = await restaurantResponse.json();
+        
+        const cities = [...new Set(landmarks.map(landmark => landmark.city))].sort();
+        
         return {
-            landmarks: posts,
+            landmarks,
             cities
         };
     } catch (error) {
-        console.error('Error loading landmark data:', error);
+        console.error('Error loading restaurant data:', error);
         return {
             landmarks: [],
             cities: []

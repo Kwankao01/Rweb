@@ -1,16 +1,23 @@
-import { posts } from '../data.js';
+export async function load({ params, fetch }) {
+    try {
+        const response = await fetch(`/api/restaurants/${params.slug}`);
+        const restaurant = await response.json();
 
-export function load({ params }) {
-    const restaurant = posts.find(post => post.slug === params.slug);
-    
-    if (!restaurant) {
+        if (!restaurant) {
+            return {
+                status: 404,
+                error: new Error('Restaurant not found')
+            };
+        }
+
         return {
-            status: 404,
-            error: new Error('Restaurant not found')
+            restaurant
+        };
+    } catch (error) {
+        console.error('Error loading restaurant data:', error);
+        return {
+            status: 500,
+            error: new Error('Internal Server Error')
         };
     }
-
-    return {
-        restaurant
-    };
 }

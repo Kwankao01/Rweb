@@ -1,10 +1,12 @@
-import { posts } from './data.js';
-
-export function load() {
+export async function load({ fetch }) {
     try {
-        const cities = [...new Set(posts.map(post => post.city))].sort();
+        const hotelResponse = await fetch('/api/hotels/');
+        const hotels = await hotelResponse.json();
+        
+        const cities = [...new Set(hotels.map(hotel => hotel.city))].sort();
+        
         return {
-            hotels: posts,
+            hotels,
             cities
         };
     } catch (error) {

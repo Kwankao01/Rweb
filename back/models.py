@@ -74,7 +74,7 @@ class GroupDB(SQLModel, table=True):
 class JoinGroupRequest(BaseModel):
     invite_code: str
     
-# Restaurants
+#------------------ Restaurants ---------------------
 
 # Class สำหรับเก็บข้อมูลร้านอาหาร
 class Restaurant(BaseModel):
@@ -116,7 +116,8 @@ class UpdateResponse(BaseModel):
     restaurant: Optional[Restaurant] = None
 
 
-# Hospitalities
+#------------------- Hotel -----------------------
+
 # Class สำหรับเก็บข้อมูลโรงแรม
 class Hotel(BaseModel):
     title: str  # ชื่อโรงแรม
@@ -155,7 +156,8 @@ class HotelDB(SQLModel, table=True):
 class UpdateResponse(BaseModel):
     message: str
     hotel: Optional[Hotel] = None
-# Landmarks
+
+#---------------------- Landmarks ------------------------
 
 # Class สำหรับเก็บข้อมูล Landmark
 class Landmark(BaseModel):
@@ -196,7 +198,22 @@ class UpdateResponse(BaseModel):
     message: str
     landmark: Optional[Landmark] = None
 
-# Trip
+# ---------------Trip ---------------------
+
+# Association Table for Trip Details
+class TripDetailDB(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    trip_id: int = Field(foreign_key="tripdb.id")
+    hotel_id: Optional[int] = Field(default=None, foreign_key="hoteldb.id")
+    restaurant_id: Optional[int] = Field(default=None, foreign_key="restaurantdb.id")
+    landmark_id: Optional[int] = Field(default=None, foreign_key="landmarkdb.id")
+
+    # Relationships to each entity
+    trip: "TripDB" = Relationship(back_populates="trip_details")
+    hotel: Optional["HotelDB"] = Relationship()
+    restaurant: Optional["RestaurantDB"] = Relationship()
+    landmark: Optional["LandmarkDB"] = Relationship()
+
 class Trip(BaseModel):
     name: str
     destination: str
@@ -212,6 +229,7 @@ class TripDB(SQLModel, table=True):
     end: date
     group_id: int = Field(foreign_key="groupdb.id")  
     group: Optional["GroupDB"] = Relationship(back_populates="trips")  
+    trip_details: List[TripDetailDB] = Relationship(back_populates="trip")
  
     def duration(self) -> int:
         return (self.end - self.start).days + 1
@@ -224,8 +242,25 @@ class TripOut(Trip):
     id: int
     duration: int
     countdown: int
+
+# Input Model for Adding Trip Details
+class TripDetail(BaseModel):
+    trip_id: int
+    hotel_ids: Optional[List[int]] = None
+    restaurant_ids: Optional[List[int]] = None
+    landmark_ids: Optional[List[int]] = None
+
+# Output Model for Trip Details
+class TripDetailOut(BaseModel):
+    id: int
+    trip_id: int
+    hotels: Optional[List[HotelOut]] = None
+    restaurants: Optional[List[RestaurantOut]] = None
+    landmarks: Optional[List[LandmarkOut]] = None
+
+
     
-#Avalible
+#------------- Avalible -------------
 
 class Availability(BaseModel):
     user_id: int 

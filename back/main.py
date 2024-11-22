@@ -158,7 +158,53 @@ def get_user(user_id: int, session: Session = Depends(get_session), user=Depends
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
-# Trip
+@app.get("/groups/{group_id}")
+def get_group(group_id: int, session: Session = Depends(get_session), user=Depends(get_current_user)):
+    # Check if group exists
+    group = session.get(GroupDB, group_id)
+    if not group:
+        raise HTTPException(status_code=404, detail="Group not found")
+    
+    # Check if user is member of the group
+    membership = session.exec(
+        select(UserGroupLink)
+        .where(UserGroupLink.group_id == group_id)
+        .where(UserGroupLink.user_id == user.id)
+    ).first()
+    
+    if not membership:
+        raise HTTPException(status_code=403, detail="Not a member of this group")
+    
+    # Get all members of the group
+    members = session.exec(
+        select(UserDB)
+        .join(UserGroupLink)
+        .where(UserGroupLink.group_id == group_id)
+    ).all()
+    
+    # Get all trips for the group
+    trips = session.exec(select(TripDB).where(TripDB.group_id == group_id)).all()
+    
+    return {
+        "id": group.id,
+        "name": group.name,
+        "invite_code": group.invite_code,
+        "members": members,
+        "trips": [
+            {
+                "id": trip.id,
+                "name": trip.name,
+                "destination": trip.destination,
+                "start": trip.start,
+                "end": trip.end,
+                "duration": trip.duration(),
+                "countdown": trip.countdown()
+            }
+            for trip in trips
+        ]
+    }
+
+# ---------------------------- Trip --------------------------------
 
 @app.post("/trips/", response_model=TripOut)
 def create_trip(trip: Trip, session: Session = Depends(get_session)):
@@ -178,35 +224,34 @@ def get_all_trips(session: Session = Depends(get_session), user=Depends(get_curr
     trips = session.exec(select(TripDB).where(TripDB.group_id.in_(user_groups))).all()
     return [TripOut(**trip.model_dump(), duration=trip.duration(), countdown=trip.countdown()) for trip in trips]
 
-@app.put("/trips/{trip_id}", response_model=TripOut)
-def update_trip(trip_id: int, trip: Trip, session: Session = Depends(get_session)):
-    existing_trip = session.get(TripDB, trip_id)
-    if not existing_trip:
-        raise HTTPException(status_code=404, detail="Trip not found")
-
-    # Update the trip details
-    for key, value in trip.model_dump().items():
-        setattr(existing_trip, key, value)
-
-    session.add(existing_trip)
-    session.commit()
-    session.refresh(existing_trip)
-
-    return TripOut(**existing_trip.model_dump(), duration=existing_trip.duration(), countdown=existing_trip.countdown())
-
-@app.delete("/trips/{trip_id}", response_model=dict)
-def delete_trip(trip_id: int, session: Session = Depends(get_session)):
+@app.get("/trips/{trip_id}", response_model=TripOut)
+def get_trip(trip_id: int, session: Session = Depends(get_session), user=Depends(get_current_user)):
+    # Get trip and verify it exists
     trip = session.get(TripDB, trip_id)
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
+    
+    # Check if user is in the trip's group
+    membership = session.exec(
+        select(UserGroupLink)
+        .where(UserGroupLink.group_id == trip.group_id)
+        .where(UserGroupLink.user_id == user.id)
+    ).first()
+    if not membership:
+        raise HTTPException(status_code=403, detail="Not authorized to view this trip")
 
-    session.delete(trip)
-    session.commit()
-
-    return {"message": f"Trip {trip_id} deleted successfully"}
-
+    return TripOut(
+        id=trip.id,
+        name=trip.name,
+        destination=trip.destination,
+        start=trip.start,
+        end=trip.end,
+        group_id=trip.group_id,
+        duration=trip.duration(),
+        countdown=trip.countdown()
+    )
 # availability
-
+ 
 @app.post("/availability", response_model=dict)
 def add_availability(availability: Availability, session: Session = Depends(get_session)):
     try:
@@ -214,69 +259,77 @@ def add_availability(availability: Availability, session: Session = Depends(get_
         group = session.get(GroupDB, availability.group_id)
         if not group:
             raise HTTPException(status_code=404, detail="Group not found")
-
+ 
         # Check if user is a member of the group
         membership = session.exec(select(UserGroupLink).where(
             UserGroupLink.group_id == availability.group_id,
             UserGroupLink.user_id == availability.user_id
         )).first()
-
+ 
         if not membership:
             raise HTTPException(status_code=403, detail="User is not a member of the group")
-        
+       
         # Check if availability already exists for each date
         existing_availabilities = session.exec(select(AvailableDB).where(
             AvailableDB.user_id == availability.user_id,
             AvailableDB.group_id == availability.group_id,
             AvailableDB.date.in_(availability.date)
         )).all()
-
+ 
         existing_dates = {av.date for av in existing_availabilities}
         new_dates = set(availability.date) - existing_dates
-
+ 
         if not new_dates:
             raise HTTPException(status_code=400, detail="Availability already exists for the provided dates")
-
+ 
         # Add availability for each new date
         for date in new_dates:
             db_availability = AvailableDB(user_id=availability.user_id, group_id=availability.group_id, date=date)
             session.add(db_availability)
-
+ 
         session.commit()
-
+ 
         return {"message": "Availability added successfully"}
-
+ 
     except Exception as e:
         print(f"Error: {e}")  # Log the error
         raise HTTPException(status_code=500, detail=str(e))
-
-    
+ 
+   
 @app.get("/groups/{group_id}/available-dates/", response_model=Union[list[date], str])
 def find_perfect_dates(group_id: int, session: Session = Depends(get_session)):
-    # Check if the group exists
-    group = session.get(GroupDB, group_id)
-    if not group:
-        raise HTTPException(status_code=404, detail="Group not found")
-    
-    # Get user_ids of members in the group
-    user_ids = session.exec(
-        select(UserGroupLink.user_id).where(UserGroupLink.group_id == group_id)
-    ).all()
-    
-    if not user_ids:
-        raise HTTPException(status_code=404, detail="No members in the group")
-    
-    # Find the perfect available dates common to all users
-    available_dates = session.exec(
-        select(AvailableDB.date)
-        .where(AvailableDB.user_id.in_(user_ids))  # Select dates for the users in the group
-        .group_by(AvailableDB.date)  # Group by the date
-        .having(func.count(AvailableDB.user_id) == len(user_ids))  # Ensure all members are available on that date
-    ).all()
-
-    # Return available dates or a message if none found
-    return available_dates if available_dates else "No matching dates found"
-
+    try:
+        # Check if group exists
+        group = session.get(GroupDB, group_id)
+        if not group:
+            raise HTTPException(status_code=404, detail="Group not found")
+       
+        # Get all members in the group
+        members = session.exec(
+            select(UserGroupLink).where(UserGroupLink.group_id == group_id)
+        ).all()
+       
+        if not members:
+            raise HTTPException(status_code=404, detail="No members in the group")
+       
+        user_ids = [member.user_id for member in members]
+       
+        # Find dates where all members are available
+        available_dates = session.exec(
+            select(AvailableDB.date)
+            .where(AvailableDB.group_id == group_id)
+            .group_by(AvailableDB.date)
+            .having(func.count(distinct(AvailableDB.user_id)) == len(user_ids))
+        ).all()
+ 
+        return [d for d in available_dates] if available_dates else "No matching dates found"
+ 
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+ 
+ 
+ 
 @app.put("/availability/group/{group_id}/user/{user_id}", response_model=dict)
 def update_availability(group_id: int, user_id: int, availability_data: Availability, session: Session = Depends(get_session)):
     # Validate group and membership
@@ -284,15 +337,15 @@ def update_availability(group_id: int, user_id: int, availability_data: Availabi
         raise HTTPException(status_code=404, detail="Group not found")
     if not session.exec(select(UserGroupLink).where(UserGroupLink.group_id == group_id, UserGroupLink.user_id == user_id)).first():
         raise HTTPException(status_code=403, detail="User is not a member of the group")
-    
+   
     # Delete old availability using delete statement
     session.exec(
         delete(AvailableDB).where(AvailableDB.group_id == group_id, AvailableDB.user_id == user_id)
     )
-    
+   
     # Insert new availability dates
     session.bulk_save_objects([AvailableDB(user_id=user_id, group_id=group_id, date=date) for date in availability_data.date])
-    
+   
     session.commit()
     return {"message": "Availability updated successfully"}
 
@@ -349,9 +402,14 @@ def create_landmark(landmark: Landmark, session: Session = Depends(get_session))
     session.refresh(db_landmark)
     return db_landmark
 
-@app.get("/landmarks/{landmark_id}", response_model=LandmarkOut)
-def read_landmark(landmark_id: int, session: Session = Depends(get_session)):
-    landmark = session.get(LandmarkDB, landmark_id)
+@app.get("/landmarks/", response_model=List[LandmarkOut])
+def read_landmarks(session: Session = Depends(get_session)):
+    landmarks = session.exec(select(LandmarkDB)).all()
+    return landmarks
+
+@app.get("/landmarks/{landmark_slug}", response_model=LandmarkOut)
+def read_landmark(landmark_slug: str, session: Session = Depends(get_session)):
+    landmark = session.exec(select(LandmarkDB).where(LandmarkDB.slug == landmark_slug)).first()
     if not landmark:
         raise HTTPException(status_code=404, detail="Landmark not found")
     return landmark
@@ -386,9 +444,14 @@ def create_restaurant(restaurant: Restaurant, session: Session = Depends(get_ses
     session.refresh(db_restaurant)
     return db_restaurant
 
-@app.get("/restaurants/{restaurant_id}", response_model=RestaurantOut)
-def read_restaurant(restaurant_id: int, session: Session = Depends(get_session)):
-    restaurant = session.get(RestaurantDB, restaurant_id)
+@app.get("/restaurants/", response_model=List[RestaurantOut])
+def read_restaurants(session: Session = Depends(get_session)):
+    restaurants = session.exec(select(RestaurantDB)).all()
+    return restaurants
+
+@app.get("/restaurants/{restaurant_slug}", response_model=RestaurantOut)
+def read_restaurant(restaurant_slug: str, session: Session = Depends(get_session)):
+    restaurant = session.exec(select(RestaurantDB).where(RestaurantDB.slug == restaurant_slug)).first()
     if not restaurant:
         raise HTTPException(status_code=404, detail="Restaurant not found")
     return restaurant
@@ -413,7 +476,7 @@ def delete_restaurant(restaurant_id: int, session: Session = Depends(get_session
     session.commit()
     return db_restaurant
 
-# -------------------- Hospitality --------------------
+# -------------------- Hotel --------------------
 
 @app.post("/hotels/", response_model=HotelOut)
 def create_hotel(hotel: Hotel, session: Session = Depends(get_session)):
@@ -424,14 +487,14 @@ def create_hotel(hotel: Hotel, session: Session = Depends(get_session)):
     return db_hotel
 
 @app.get("/hotels/", response_model=List[HotelOut])
-def get_hotels(session: Session = Depends(get_session)):
+def read_hotels(session: Session = Depends(get_session)):
     hotels = session.exec(select(HotelDB)).all()
     return hotels
 
-@app.get("/hotels/{hotel_id}", response_model=HotelOut)
-def get_hotel(hotel_id: int, session: Session = Depends(get_session)):
-    hotel = session.get(HotelDB, hotel_id)
-    if hotel is None:
+@app.get("/hotels/{hotel_slug}", response_model=HotelOut)
+def read_hotel(hotel_slug: str, session: Session = Depends(get_session)):
+    hotel = session.exec(select(HotelDB).where(HotelDB.slug == hotel_slug)).first()
+    if not hotel:
         raise HTTPException(status_code=404, detail="Hotel not found")
     return hotel
 
@@ -461,7 +524,7 @@ def delete_hotel(hotel_id: int, session: Session = Depends(get_session)):
 
 #------------- availability -----------------
  
-@app.post("/api/availability/{group_id}", response_model=dict)
+@app.post("/availability/{group_id}", response_model=dict)
 def add_availability(group_id: int, availability: Availability, session: Session = Depends(get_session), user=Depends(get_current_user)):
     try:
         group = session.get(GroupDB, group_id)
@@ -536,3 +599,4 @@ def update_availability(group_id: int, user_id: int, availability_data: Availabi
    
     session.commit()
     return {"message": "Availability updated successfully"}
+

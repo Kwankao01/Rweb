@@ -96,3 +96,5 @@ POST http://127.0.0.1:8000/hotels/
   "content": "Stay in the heart of nature at this stunning resort with elephant experiences.",
   "type": "Resort"
 }
+
+POST http://127.0.0.1:8000/availability/1
