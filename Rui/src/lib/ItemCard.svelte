@@ -44,6 +44,8 @@
             {/if}
         {/if}
         <p class="city">{item.city}</p>
+        <p class="price">Price ฿ {item.price || 'Test Price'}</p>
+
     </div>
 </div>
   

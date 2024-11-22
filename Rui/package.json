@@ -21,6 +21,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"bulma": "^1.0.2"
+		"bulma": "^1.0.2",
+		"sqlite3": "^5.1.7"
 	}
 }

@@ -8,6 +8,7 @@ const storedUserId = isBrowser ? localStorage.getItem("user_id") : null;
 
 export const token = writable(storedToken);
 export const userId = writable(storedUserId);
+export const userDetails = writable(null); // เก็บข้อมูลผู้ใช้
 
 // Sync the store with localStorage (only in the browser)
 if (isBrowser) {
