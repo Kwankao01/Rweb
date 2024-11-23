@@ -1,7 +1,5 @@
-import { onMount } from 'svelte';
 import { writable, derived, get } from 'svelte/store';
 import { token, userId } from '$lib/stores/auth';
- 
 export function CalendarLogic() {
  const dayStore = writable(new Date());
  const events = writable({});
@@ -39,7 +37,6 @@ export function CalendarLogic() {
        currentWeek = [];
      }
    }
- 
    while (currentWeek.length < DAYS_IN_WEEK) {
      currentWeek.push(null);
    }
@@ -70,7 +67,6 @@ export function CalendarLogic() {
      );
    };
  }
- 
  async function fetchGroups() {
    try {
      loading.set(true);
@@ -108,7 +104,6 @@ export function CalendarLogic() {
          'Authorization': `Bearer ${get(token)}`
        }
      });
- 
      if (response.ok) {
        const data = await response.json();
        if (Array.isArray(data)) {
@@ -132,7 +127,6 @@ export function CalendarLogic() {
      perfectMatchDates.set([]);
    }
  }
- 
  selectedGroup.subscribe(async (groupId) => {
    if (groupId) {
      await fetchAvailability(groupId);
@@ -141,7 +135,6 @@ export function CalendarLogic() {
      perfectMatchDates.set([]);
    }
  });
- 
  function handleDateClick(date, event) {
    if (!date || !event || !event.currentTarget) return;
    
@@ -151,29 +144,24 @@ export function CalendarLogic() {
    const circle = document.createElement("span");
    const diameter = Math.max(button.clientWidth, button.clientHeight);
    const radius = diameter / 2;
- 
    circle.style.width = circle.style.height = `${diameter}px`;
    circle.style.left = `${event.clientX - button.offsetLeft - radius}px`;
    circle.style.top = `${event.clientY - button.offsetTop - radius}px`;
    circle.classList.add("ripple");
- 
    const ripple = button.getElementsByClassName("ripple")[0];
    if (ripple) {
      ripple.remove();
    }
- 
    button.appendChild(circle);
    selectedDate.set(date);
    showConfirmModal.set(true);
  }
- 
  async function confirmAvailability() {
    const currentDate = get(selectedDate);
    if (!currentDate || !get(selectedGroup)) {
      error.set('Please select a group and date');
      return;
    }
- 
    try {
      loading.set(true);
      const response = await fetch('/api/availability', {
@@ -188,7 +176,6 @@ export function CalendarLogic() {
          date: [getDateString(currentDate)]
        })
      });
- 
      if (response.ok) {
        availabilityDates.update(dates => ({
          ...dates,
@@ -218,12 +205,12 @@ export function CalendarLogic() {
      clickedCell.set(null);
    }
  }
- 
  function closeModal() {
    showConfirmModal.set(false);
    selectedDate.set(null);
    clickedCell.set(null);
  }
+ 
  
  return {
    dayStore,

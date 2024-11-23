@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException, Depends,Request
 from fastapi.security import OAuth2PasswordBearer
 from typing import Union
-from sqlalchemy import func, delete
+from sqlalchemy import func, delete, distinct
+from sqlalchemy.orm import joinedload, selectinload 
 from sqlmodel import Session, create_engine, select
 from pydantic import BaseModel
 from database import get_session, init_db, engine
@@ -250,7 +251,104 @@ def get_trip(trip_id: int, session: Session = Depends(get_session), user=Depends
         duration=trip.duration(),
         countdown=trip.countdown()
     )
-# availability
+
+
+# ------------------add hotel to trip ------------------------
+
+@app.post("/trips/{trip_id}/add_item", response_model=TripOut)
+def add_item_to_trip(trip_id: int, hotel_id: int, session: Session = Depends(get_session), user=Depends(get_current_user)):
+    # Get the trip
+    trip = session.get(TripDB, trip_id)
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    
+    # Check if the user is a member of the trip's group
+    membership = session.exec(
+        select(UserGroupLink)
+        .where(UserGroupLink.group_id == trip.group_id)
+        .where(UserGroupLink.user_id == user.id)
+    ).first()
+    if not membership:
+        raise HTTPException(status_code=403, detail="Not authorized to add items to this trip")
+
+    # Get the hotel
+    hotel = session.get(HotelDB, hotel_id)
+    if not hotel:
+        raise HTTPException(status_code=404, detail="Hotel not found")
+
+    # Create a new trip detail entry
+    trip_detail = TripDetailDB(trip_id=trip_id, hotel_id=hotel_id)
+    session.add(trip_detail)
+    session.commit()
+    session.refresh(trip_detail)
+
+    # Refresh the trip to include the new item
+    session.refresh(trip)
+
+    return TripOut(
+        id=trip.id,
+        name=trip.name,
+        destination=trip.destination,
+        start=trip.start,
+        end=trip.end,
+        group_id=trip.group_id,
+        duration=trip.duration(),
+        countdown=trip.countdown()
+    )
+
+@app.get("/trips/{trip_id}", response_model=TripOut)
+async def get_trip(
+    trip_id: int,
+    user=Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    try:
+        # Add debug logging
+        print(f"Fetching trip {trip_id}")
+        
+        trip = session.exec(
+            select(TripDB)
+            .where(TripDB.id == trip_id)
+            .options(
+                selectinload(TripDB.trip_details)
+                .selectinload(TripDetailDB.hotel)
+            )
+        ).first()
+
+        if not trip:
+            print(f"Trip {trip_id} not found")
+            raise HTTPException(status_code=404, detail="Trip not found")
+
+        # Print the response data for debugging
+        response_data = {
+            "id": trip.id,
+            "name": trip.name,
+            "destination": trip.destination,
+            "start": trip.start,
+            "end": trip.end,
+            "group_id": trip.group_id,
+            "duration": trip.duration(),
+            "countdown": trip.countdown(),
+            "hotels": [
+                {
+                    "id": detail.hotel.id,
+                    "title": detail.hotel.title,
+                    "image": detail.hotel.image,
+                    "city": detail.hotel.city,
+                    "price": detail.hotel.price
+                }
+                for detail in trip.trip_details
+                if detail.hotel
+            ]
+        }
+        print("Response data:", response_data)
+        return response_data
+
+    except Exception as e:
+        print(f"Error in get_trip: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+# --------------------------- availability ------------------------
  
 @app.post("/availability", response_model=dict)
 def add_availability(availability: Availability, session: Session = Depends(get_session)):
@@ -348,49 +446,6 @@ def update_availability(group_id: int, user_id: int, availability_data: Availabi
    
     session.commit()
     return {"message": "Availability updated successfully"}
-
-
-#fav
-
-@app.post("/api/favorites/{slug}")
-async def add_favorite(
-    slug: str, 
-    current_user: UserDB = Depends(get_current_user),
-    session: Session = Depends(get_session)
-):
-    # Create new favorite
-    favorite = FavoriteDB(user_id=current_user.id, slug=slug)
-    session.add(favorite)
-    try:
-        session.commit()
-        return {"message": "Added to favorites", "slug": slug}
-    except Exception as e:
-        session.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
-
-@app.delete("/api/favorites/{slug}")
-async def remove_favorite(
-    slug: str,
-    current_user: UserDB = Depends(get_current_user),
-    session: Session = Depends(get_session)
-):
-    # Find and remove favorite
-    favorite = session.exec(
-        select(FavoriteDB)
-        .where(FavoriteDB.user_id == current_user.id)
-        .where(FavoriteDB.slug == slug)
-    ).first()
-    
-    if not favorite:
-        raise HTTPException(status_code=404, detail="Favorite not found")
-        
-    session.delete(favorite)
-    try:
-        session.commit()
-        return {"message": "Removed from favorites", "slug": slug}
-    except Exception as e:
-        session.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
 
 # -------------------- Landmark --------------------
 
@@ -522,81 +577,188 @@ def delete_hotel(hotel_id: int, session: Session = Depends(get_session)):
     session.commit()
     return UpdateResponse(message="Hotel deleted successfully")
 
-#------------- availability -----------------
  
-@app.post("/availability/{group_id}", response_model=dict)
-def add_availability(group_id: int, availability: Availability, session: Session = Depends(get_session), user=Depends(get_current_user)):
+# availability
+ 
+@app.post("/availability", response_model=dict)
+def add_availability(availability: Availability, session: Session = Depends(get_session)):
     try:
-        group = session.get(GroupDB, group_id)
+        # Check if group exists
+        group = session.get(GroupDB, availability.group_id)
         if not group:
             raise HTTPException(status_code=404, detail="Group not found")
  
+        # Check if user is a member of the group
         membership = session.exec(select(UserGroupLink).where(
-            UserGroupLink.group_id == group_id,
-            UserGroupLink.user_id == user.id
+            UserGroupLink.group_id == availability.group_id,
+            UserGroupLink.user_id == availability.user_id
         )).first()
  
         if not membership:
-            raise HTTPException(status_code=403, detail="User is not a member")
+            raise HTTPException(status_code=403, detail="User is not a member of the group")
        
-        for date in availability.date:
-            db_availability = AvailableDB(
-                user_id=user.id,
-                group_id=group_id,
-                date=date
-            )
+        # Check if availability already exists for each date
+        existing_availabilities = session.exec(select(AvailableDB).where(
+            AvailableDB.user_id == availability.user_id,
+            AvailableDB.group_id == availability.group_id,
+            AvailableDB.date.in_(availability.date)
+        )).all()
+ 
+        existing_dates = {av.date for av in existing_availabilities}
+        new_dates = set(availability.date) - existing_dates
+ 
+        if not new_dates:
+            raise HTTPException(status_code=400, detail="Availability already exists for the provided dates")
+ 
+        # Add availability for each new date
+        for date in new_dates:
+            db_availability = AvailableDB(user_id=availability.user_id, group_id=availability.group_id, date=date)
             session.add(db_availability)
  
         session.commit()
+ 
         return {"message": "Availability added successfully"}
-       
+ 
     except Exception as e:
-        session.rollback()
+        print(f"Error: {e}")  # Log the error
         raise HTTPException(status_code=500, detail=str(e))
  
    
 @app.get("/groups/{group_id}/available-dates/", response_model=Union[list[date], str])
 def find_perfect_dates(group_id: int, session: Session = Depends(get_session)):
-    # Check if the group exists
-    group = session.get(GroupDB, group_id)
-    if not group:
-        raise HTTPException(status_code=404, detail="Group not found")
-   
-    # Get user_ids of members in the group
-    user_ids = session.exec(
-        select(UserGroupLink.user_id).where(UserGroupLink.group_id == group_id)
-    ).all()
-   
-    if not user_ids:
-        raise HTTPException(status_code=404, detail="No members in the group")
-   
-    # Find the perfect available dates common to all users
-    available_dates = session.exec(
-        select(AvailableDB.date)
-        .where(AvailableDB.user_id.in_(user_ids))  # Select dates for the users in the group
-        .group_by(AvailableDB.date)  # Group by the date
-        .having(func.count(AvailableDB.user_id) == len(user_ids))  # Ensure all members are available on that date
+    try:
+        # Check if group exists
+        group = session.get(GroupDB, group_id)
+        if not group:
+            raise HTTPException(status_code=404, detail="Group not found")
+       
+        # Get all members in the group
+        members = session.exec(
+            select(UserGroupLink).where(UserGroupLink.group_id == group_id)
+        ).all()
+       
+        if not members:
+            raise HTTPException(status_code=404, detail="No members in the group")
+       
+        user_ids = [member.user_id for member in members]
+       
+        # Find dates where all members are available
+        available_dates = session.exec(
+            select(AvailableDB.date)
+            .where(AvailableDB.group_id == group_id)
+            .group_by(AvailableDB.date)
+            .having(func.count(distinct(AvailableDB.user_id)) == len(user_ids))
+        ).all()
+ 
+        return [d for d in available_dates] if available_dates else "No matching dates found"
+ 
+    except Exception as e:
+        print(f"Error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    
+
+#fav
+ 
+@app.get("/favorites/")
+async def get_favorites(
+    current_user: UserDB = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    # Get favorites with their related items
+    favorites = session.exec(
+        select(FavoriteDB)
+        .where(FavoriteDB.user_id == current_user.id)
+        .options(
+            joinedload(FavoriteDB.hotel),
+            joinedload(FavoriteDB.restaurant),
+            joinedload(FavoriteDB.landmark)
+        )
     ).all()
  
-    # Return available dates or a message if none found
-    return available_dates if available_dates else "No matching dates found"
+    # Transform the data to include the actual items
+    formatted_favorites = []
+    for fav in favorites:
+        item = None
+        item_type = None
  
-@app.put("/availability/group/{group_id}/user/{user_id}", response_model=dict)
-def update_availability(group_id: int, user_id: int, availability_data: Availability, session: Session = Depends(get_session)):
-    # Validate group and membership
-    if not session.get(GroupDB, group_id):
-        raise HTTPException(status_code=404, detail="Group not found")
-    if not session.exec(select(UserGroupLink).where(UserGroupLink.group_id == group_id, UserGroupLink.user_id == user_id)).first():
-        raise HTTPException(status_code=403, detail="User is not a member of the group")
+        if fav.hotel:
+            item = fav.hotel
+            item_type = 'Hotel'
+        elif fav.restaurant:
+            item = fav.restaurant
+            item_type = 'Restaurant'
+        elif fav.landmark:
+            item = fav.landmark
+            item_type = 'Landmark'
+ 
+        if item:
+            formatted_favorites.append({
+                'id': item.id,
+                'title': item.title,
+                'slug': item.slug,
+                'image': item.image,
+                'rating': item.rating,
+                'reviews': item.reviews,
+                'price': item.price,
+                'city': item.city,
+                'type': item_type,
+                'content': item.content,
+                'cancellation': item.cancellation
+            })
+ 
+    return formatted_favorites
+ 
+@app.post("/favorites")
+async def add_favorite(
+    request: Request,
+    current_user: UserDB = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    item = await request.json()
    
-    # Delete old availability using delete statement
-    session.exec(
-        delete(AvailableDB).where(AvailableDB.group_id == group_id, AvailableDB.user_id == user_id)
+    favorite = FavoriteDB(
+        user_id=current_user.id,
+        landmark_id=item['id'] if item['type'] == 'Landmark' else None,
+        hotel_id=item['id'] if item['type'] == 'Hotel' else None,
+        restaurant_id=item['id'] if item['type'] == 'Restaurant' else None
     )
    
-    # Insert new availability dates
-    session.bulk_save_objects([AvailableDB(user_id=user_id, group_id=group_id, date=date) for date in availability_data.date])
+    session.add(favorite)
+    try:
+        session.commit()
+        return {"message": "Added to favorites", "item": item}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+ 
+@app.delete("/favorites/{id}")
+async def remove_favorite(
+    id: int,
+    type: str,
+    current_user: UserDB = Depends(get_current_user),
+    session: Session = Depends(get_session)
+):
+    query = select(FavoriteDB).where(FavoriteDB.user_id == current_user.id)
    
-    session.commit()
-    return {"message": "Availability updated successfully"}
+    if type == 'Landmark':
+        query = query.where(FavoriteDB.landmark_id == id)
+    elif type == 'Hotel':
+        query = query.where(FavoriteDB.hotel_id == id)
+    elif type == 'Restaurant':
+        query = query.where(FavoriteDB.restaurant_id == id)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid type")
+   
+    favorite = session.exec(query).first()
+    if not favorite:
+        raise HTTPException(status_code=404, detail="Favorite not found")
+   
+    session.delete(favorite)
+    try:
+        session.commit()
+        return {"message": "Removed from favorites"}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+ 
 

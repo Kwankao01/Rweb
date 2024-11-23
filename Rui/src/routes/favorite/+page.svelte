@@ -1,19 +1,26 @@
 <script>
-    import { favorites } from '$lib/favoritesStore.js';
-    import ItemListContainer from '$lib/ItemListContainer.svelte'; 
-    
+    import { onMount } from 'svelte';
+    import { favorites, loadFavorites } from '$lib/favoritesStore.js';
+    import ItemListContainer from '$lib/ItemListContainer.svelte';
+   
     const types = ['Restaurant', 'Hotel', 'Landmark'];
-    let filteredItems = [];
-
-    $: filteredItems = [...$favorites];
+   
+    onMount(() => {
+        console.log('Loading favorites...');
+        loadFavorites();
+    });
+ 
+    // Data is already in the correct format from the backend
+    $: filteredItems = $favorites;
+    $: console.log('Filtered Items:', filteredItems);
 </script>
-
-<ItemListContainer 
+ 
+<ItemListContainer
     items={filteredItems}  
     cities={types}        
     top="Your Favorites"
     itemRoute="/favorite"
-    filterType="type"     
+    filterType="type"    
     pageType="favorite"
-    selectedType=""       
+    selectedType=""      
 />

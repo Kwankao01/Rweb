@@ -1,11 +1,19 @@
-<script>
+<script >
+
     import ItemCard from '../../../lib/ItemCard.svelte';
+    import AddToTrip from '../../../lib/AddToTrip.svelte';
     export let data;
 
-    const handleSelectItem = (item) => {
-        
-    };
+    let selectedGroupId = null;
+
+    const handleSelectItem = (item, groupId) => {
+    selectedGroupId = groupId;
+    console.log('Selected item:', item);
+    console.log('Selected group:', selectedGroupId);
+    // TODO: Add logic to save the item to the selected group
+  };
 </script>
+
 
 <div class="hotel-container">
     <div class="hotel-content">
@@ -19,6 +27,7 @@
             {#if data.hotel.cancellation}
                 <p class="cancellation">{data.hotel.cancellation}</p>
             {/if}
+            <AddToTrip item={data.hotel} on:add={(event) => handleSelectItem(data.hotel, event.detail)} />
         </div>
     </div>
 </div>

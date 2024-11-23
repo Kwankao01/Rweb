@@ -1,33 +1,44 @@
-// page.server.js
+// src/routes/trip/[id]/+page.server.js
 import { error } from '@sveltejs/kit';
 
-export async function load({ params, fetch }) {
-  const tripId = params.id;
+export async function load({ params, fetch, locals }) {
+    const tripId = params.id;
 
-  try {
-    // Fetch trip details
-    const tripResponse = await fetch(`/api/trips/${tripId}`);
-    const trip = await tripResponse.json();
+    try {
+        // Get token (adjust based on your auth setup)
+        const token = localStorage.getItem('token'); // or however you store your token
 
-    // Fetch associated hotels
-    const hotelsResponse = await fetch(`/api/trips/${tripId}/hotels`);
-    const hotels = await hotelsResponse.json();
+        // Fetch trip details
+        const response = await fetch(`/api/trips/${tripId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-    // Fetch associated restaurants 
-    const restaurantsResponse = await fetch(`/api/trips/${tripId}/restaurants`);
-    const restaurants = await restaurantsResponse.json();
+        if (!response.ok) {
+            throw error(response.status, 'Failed to load trip data');
+        }
 
-    // Fetch associated landmarks
-    const landmarksResponse = await fetch(`/api/trips/${tripId}/landmarks`);  
-    const landmarks = await landmarksResponse.json();
+        const tripData = await response.json();
+        
+        // Return structured data with defaults
+        return {
+            trip: {
+                id: tripData.id || null,
+                name: tripData.name || '',
+                destination: tripData.destination || '',
+                start: tripData.start || null,
+                end: tripData.end || null,
+                duration: tripData.duration || 0,
+                countdown: tripData.countdown || 0,
+                hotels: tripData.hotels || [],
+                group_id: tripData.group_id || null
+            }
+        };
 
-    return {
-      trip,
-      hotels,
-      restaurants,
-      landmarks
-    };
-  } catch (err) {
-    throw error(500, 'Error fetching trip data');
-  }
+    } catch (err) {
+        console.error("Error loading trip:", err);
+        throw error(500, 'Failed to load trip data');
+    }
 }

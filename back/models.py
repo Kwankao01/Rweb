@@ -116,7 +116,7 @@ class UpdateResponse(BaseModel):
     restaurant: Optional[Restaurant] = None
 
 
-#------------------- Hotel -----------------------
+#------------------- Hotels -----------------------
 
 # Class สำหรับเก็บข้อมูลโรงแรม
 class Hotel(BaseModel):
@@ -148,6 +148,7 @@ class HotelDB(SQLModel, table=True):
     city: str  # เมืองที่ตั้งโรงแรม
     content: str  # รายละเอียดเกี่ยวกับโรงแรม
     type: str = "Hotel"  # ประเภทของสถานที่ (Hotel)
+    
 
     # สามารถเพิ่มฟิลด์อื่นๆ เช่น favorites หากจำเป็น
     favorites: List["FavoriteDB"] = Relationship(back_populates="hotel")
@@ -243,6 +244,20 @@ class TripOut(Trip):
     duration: int
     countdown: int
 
+class TripOut(BaseModel):
+    id: int
+    name: str
+    destination: str
+    start: date
+    end: date
+    group_id: int
+    duration: int
+    countdown: int
+    hotels: Optional[List[HotelOut]] = None
+
+    class Config:
+        from_attributes = True
+
 # Input Model for Adding Trip Details
 class TripDetail(BaseModel):
     trip_id: int
@@ -279,9 +294,8 @@ class AvailableDB(SQLModel, table=True):
 class Favorite(BaseModel):
     user_id: int
     landmark_id: Optional[int] = None
-    hospitality_id: Optional[int] = None
+    hotel_id: Optional[int] = None
     restaurant_id: Optional[int] = None
-    transportation_id: Optional[int] = None
 
 # Output model that includes an ID
 class FavoriteOut(Favorite):

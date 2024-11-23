@@ -4,13 +4,23 @@ Authorization: Bearer <your-jwt-token>
 Content-Type: application/json
 
 {
-  "name": "Sabrina Carpenter",
-  "display_name": "Sabrina",
-  "email": "Sabrina.C@example.com",
+  "name": "Kullanit Sarapoj",
+  "display_name": "Kwan",
+  "email": "Kullanit.S@example.com",
   "password": "12345",
-  "phone_number": "0988888888",
-  "address": "32 Alaska"
+  "phone_number": "0840103956",
+  "address": "78 Saimai"
 }
+
+#---------get trip id------------------
+
+GET http://127.0.0.1:8000/trips/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjozfQ.-xgM_8vQuWYM-GL2pymt0a3HetgHUZ9HTZzFdKo3dKM
+Content-Type: application/json
+
+GET http://127.0.0.1:8000/trips/1
+Authorization: Bearer <your_access_token>
+Content-Type: application/json
 
 ###
 
@@ -98,3 +108,15 @@ POST http://127.0.0.1:8000/hotels/
 }
 
 POST http://127.0.0.1:8000/availability/1
+
+
+POST http://127.0.0.1:8000/favorites/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyfQ.jOO5dNmkDWPnvprO-V3tnhArRukBeBZGwWMkQ0wgNwA
+ 
+{
+  "id": 1,
+  "type": "Landmark"
+}
+ 
+GET http://127.0.0.1:8000/favorites/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoyfQ.jOO5dNmkDWPnvprO-V3tnhArRukBeBZGwWMkQ0wgNwA
