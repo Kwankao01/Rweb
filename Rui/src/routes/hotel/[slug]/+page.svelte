@@ -1,19 +1,32 @@
-<script >
-
+<script>
     import ItemCard from '../../../lib/ItemCard.svelte';
     import AddToTrip from '../../../lib/AddToTrip.svelte';
+
     export let data;
 
-    let selectedGroupId = null;
+    let selectedItems = [];  // Array to track selected items
+    let selectedGroupId;
 
-    const handleSelectItem = (item, groupId) => {
-    selectedGroupId = groupId;
-    console.log('Selected item:', item);
-    console.log('Selected group:', selectedGroupId);
-    // TODO: Add logic to save the item to the selected group
-  };
+    const handleSelectItem = (event) => {
+        const { item, groupId } = event.detail;
+        selectedGroupId = groupId;
+
+        const isItemAlreadySelected = selectedItems.some((selectedItem) => selectedItem.id === item.id);
+
+        if (isItemAlreadySelected) {
+            console.log('Item is already in the trip.');
+            return; // Prevent adding the item again
+        }
+
+        selectedItems.push(item);
+
+        console.log('Selected item:', item);
+        console.log('Selected group:', selectedGroupId);
+        console.log('Updated selected items:', selectedItems);
+
+        // TODO: Add logic to save the item to the selected group
+    };
 </script>
-
 
 <div class="hotel-container">
     <div class="hotel-content">
@@ -27,19 +40,19 @@
             {#if data.hotel.cancellation}
                 <p class="cancellation">{data.hotel.cancellation}</p>
             {/if}
-            <AddToTrip item={data.hotel} on:add={(event) => handleSelectItem(data.hotel, event.detail)} />
+            <AddToTrip item={data.hotel} on:itemUpdated={handleSelectItem} />
         </div>
     </div>
 </div>
 
 <style>
     .hotel-container {
-        max-width: 800px; 
-        margin: 0 auto; 
-        padding: 20px; 
-        background-color: #f9f9f9; 
-        border-radius: 8px; 
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
 
     .hotel-content {
@@ -47,37 +60,37 @@
     }
 
     h1 {
-        font-size: 2.5em; 
-        color: #26796c; 
-        text-align: center; 
-        margin-bottom: 20px; 
+        font-size: 2.5em;
+        color: #26796c;
+        text-align: center;
+        margin-bottom: 20px;
     }
 
     .hotel-image {
-        width: 100%; 
-        max-height: 500px; 
+        width: 100%;
+        max-height: 500px;
         object-fit: cover;
-        border-radius: 8px; 
-        margin-bottom: 20px; 
+        border-radius: 8px;
+        margin-bottom: 20px;
     }
 
     .hotel-details {
-        font-size: 1.2em; 
-        line-height: 1.6; 
-        color: #555; 
+        font-size: 1.2em;
+        line-height: 1.6;
+        color: #555;
         padding: 20px;
         background: white;
         border-radius: 8px;
     }
 
     .rating {
-        font-weight: bold; 
+        font-weight: bold;
         color: #ff9800;
         margin: 15px 0;
     }
 
     .location {
-        font-style: italic; 
+        font-style: italic;
         color: #666;
         margin: 10px 0;
     }
@@ -93,11 +106,11 @@
         .hotel-container {
             margin: 10px;
         }
-        
+
         h1 {
             font-size: 2em;
         }
-        
+
         .hotel-image {
             max-height: 400px;
         }

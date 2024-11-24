@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends,Request
 from fastapi.security import OAuth2PasswordBearer
 from typing import Union
 from sqlalchemy import func, delete, distinct
-from sqlalchemy.orm import joinedload, selectinload 
+from sqlalchemy.orm import joinedload, selectinload, configure_mappers
 from sqlmodel import Session, create_engine, select
 from pydantic import BaseModel
 from database import get_session, init_db, engine
@@ -14,6 +14,8 @@ import jwt
 init_db(engine)
 get_session()
 app = FastAPI()
+configure_mappers()
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
@@ -254,100 +256,158 @@ def get_trip(trip_id: int, session: Session = Depends(get_session), user=Depends
 
 
 # ------------------add hotel to trip ------------------------
-
-@app.post("/trips/{trip_id}/add_item", response_model=TripOut)
-def add_item_to_trip(trip_id: int, hotel_id: int, session: Session = Depends(get_session), user=Depends(get_current_user)):
-    # Get the trip
+@app.get("/trips/{trip_id}/places")
+async def get_trip_places(
+    trip_id: int,
+    session: Session = Depends(get_session),
+    current_user: UserDB = Depends(get_current_user),
+):
+    # Get the trip and verify it exists
     trip = session.get(TripDB, trip_id)
     if not trip:
         raise HTTPException(status_code=404, detail="Trip not found")
     
-    # Check if the user is a member of the trip's group
+    # Check if user is in the trip's group
     membership = session.exec(
         select(UserGroupLink)
         .where(UserGroupLink.group_id == trip.group_id)
-        .where(UserGroupLink.user_id == user.id)
+        .where(UserGroupLink.user_id == current_user.id)
     ).first()
     if not membership:
-        raise HTTPException(status_code=403, detail="Not authorized to add items to this trip")
+        raise HTTPException(status_code=403, detail="Not authorized to view this trip")
 
-    # Get the hotel
-    hotel = session.get(HotelDB, hotel_id)
-    if not hotel:
-        raise HTTPException(status_code=404, detail="Hotel not found")
+    # Get trip places with related items
+    trip_places = session.exec(
+        select(TripPlaceDB)
+        .where(TripPlaceDB.trip_id == trip_id)
+        .options(
+            joinedload(TripPlaceDB.hotel),
+            joinedload(TripPlaceDB.restaurant),
+            joinedload(TripPlaceDB.landmark),
+        )
+    ).all()
 
-    # Create a new trip detail entry
-    trip_detail = TripDetailDB(trip_id=trip_id, hotel_id=hotel_id)
-    session.add(trip_detail)
-    session.commit()
-    session.refresh(trip_detail)
+    # Transform the data
+    formatted_places = []
+    for place in trip_places:
+        item = None
+        item_type = None
 
-    # Refresh the trip to include the new item
-    session.refresh(trip)
+        if place.hotel:
+            item = place.hotel
+            item_type = "Hotel"
+        elif place.restaurant:
+            item = place.restaurant
+            item_type = "Restaurant"
+        elif place.landmark:
+            item = place.landmark
+            item_type = "Landmark"
 
-    return TripOut(
-        id=trip.id,
-        name=trip.name,
-        destination=trip.destination,
-        start=trip.start,
-        end=trip.end,
-        group_id=trip.group_id,
-        duration=trip.duration(),
-        countdown=trip.countdown()
+        if item:
+            formatted_places.append({
+                "id": item.id,
+                "title": item.title,
+                "slug": item.slug,
+                "image": item.image,
+                "rating": item.rating,
+                "reviews": item.reviews,
+                "price": item.price,
+                "city": item.city,
+                "type": item_type,
+                "content": item.content,
+                "cancellation": item.cancellation,
+            })
+
+    return formatted_places
+
+
+@app.post("/trips/{trip_id}/places")
+async def add_place_to_trip(
+    trip_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+    current_user: UserDB = Depends(get_current_user),
+):
+    # Get the trip and verify it exists
+    trip = session.get(TripDB, trip_id)
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
+    
+    # Check if user is in the trip's group
+    membership = session.exec(
+        select(UserGroupLink)
+        .where(UserGroupLink.group_id == trip.group_id)
+        .where(UserGroupLink.user_id == current_user.id)
+    ).first()
+    if not membership:
+        raise HTTPException(status_code=403, detail="Not authorized to add to this trip")
+
+    # Parse the request body
+    item = await request.json()
+
+    # Create a new TripPlace entry
+    trip_place = TripPlaceDB(
+        trip_id=trip_id,
+        user_id=current_user.id,
+        landmark_id=item["id"] if item["type"] == "Landmark" else None,
+        hotel_id=item["id"] if item["type"] == "Hotel" else None,
+        restaurant_id=item["id"] if item["type"] == "Restaurant" else None,
     )
 
-@app.get("/trips/{trip_id}", response_model=TripOut)
-async def get_trip(
-    trip_id: int,
-    user=Depends(get_current_user),
-    session: Session = Depends(get_session)
-):
+    session.add(trip_place)
     try:
-        # Add debug logging
-        print(f"Fetching trip {trip_id}")
-        
-        trip = session.exec(
-            select(TripDB)
-            .where(TripDB.id == trip_id)
-            .options(
-                selectinload(TripDB.trip_details)
-                .selectinload(TripDetailDB.hotel)
-            )
-        ).first()
-
-        if not trip:
-            print(f"Trip {trip_id} not found")
-            raise HTTPException(status_code=404, detail="Trip not found")
-
-        # Print the response data for debugging
-        response_data = {
-            "id": trip.id,
-            "name": trip.name,
-            "destination": trip.destination,
-            "start": trip.start,
-            "end": trip.end,
-            "group_id": trip.group_id,
-            "duration": trip.duration(),
-            "countdown": trip.countdown(),
-            "hotels": [
-                {
-                    "id": detail.hotel.id,
-                    "title": detail.hotel.title,
-                    "image": detail.hotel.image,
-                    "city": detail.hotel.city,
-                    "price": detail.hotel.price
-                }
-                for detail in trip.trip_details
-                if detail.hotel
-            ]
-        }
-        print("Response data:", response_data)
-        return response_data
-
+        session.commit()
+        return {"message": "Place added to trip", "item": item}
     except Exception as e:
-        print(f"Error in get_trip: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        session.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.delete("/trips/{trip_id}/places/{place_id}")
+async def remove_place_from_trip(
+    trip_id: int,
+    place_id: int,
+    type: str,
+    session: Session = Depends(get_session),
+    current_user: UserDB = Depends(get_current_user),
+):
+    # Get the trip and verify it exists
+    trip = session.get(TripDB, trip_id)
+    if not trip:
+        raise HTTPException(status_code=404, detail="Trip not found")
     
+    # Check if user is in the trip's group
+    membership = session.exec(
+        select(UserGroupLink)
+        .where(UserGroupLink.group_id == trip.group_id)
+        .where(UserGroupLink.user_id == current_user.id)
+    ).first()
+    if not membership:
+        raise HTTPException(status_code=403, detail="Not authorized to remove from this trip")
+
+    # Build the query based on type
+    query = select(TripPlaceDB).where(TripPlaceDB.trip_id == trip_id)
+    if type == "Landmark":
+        query = query.where(TripPlaceDB.landmark_id == place_id)
+    elif type == "Hotel":
+        query = query.where(TripPlaceDB.hotel_id == place_id)
+    elif type == "Restaurant":
+        query = query.where(TripPlaceDB.restaurant_id == place_id)
+    else:
+        raise HTTPException(status_code=400, detail="Invalid type")
+
+    trip_place = session.exec(query).first()
+    if not trip_place:
+        raise HTTPException(status_code=404, detail="Place not found in trip")
+
+    session.delete(trip_place)
+    try:
+        session.commit()
+        return {"message": "Place removed from trip"}
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=400, detail=str(e))
+
 # --------------------------- availability ------------------------
  
 @app.post("/availability", response_model=dict)
@@ -657,7 +717,7 @@ def find_perfect_dates(group_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=500, detail=str(e))
     
 
-#fav
+#---------------------------- favorite ----------------------------------
  
 @app.get("/favorites/")
 async def get_favorites(

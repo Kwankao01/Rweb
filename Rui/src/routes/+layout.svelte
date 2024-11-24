@@ -1,7 +1,9 @@
 <script>
     import Footer from '$lib/Footer.svelte';
+    import { onMount } from 'svelte';
+    import { goto } from "$app/navigation";
     import { showPopup, popupMessage } from '$lib/favoritesStore.js';
-    import { onMount } from 'svelte'; 
+   
 
     onMount(() => {
         document.querySelectorAll('.nav-links a').forEach(link => {
@@ -11,6 +13,19 @@
             });
         });
     });
+
+// ฟังก์ชันสำหรับล็อกอิน
+    const handleLogin = () => {
+        goto('/login');
+    };
+
+  // ฟังก์ชันสำหรับไปหน้าโปรไฟล์
+     const handleProfile = () => {
+        goto('/profile');
+     };
+
+
+    
 </script>
 
 <svelte:head>
@@ -51,9 +66,12 @@
         <i class="fas fa-heart" style="font-size: 30px;"></i>
     </a>
 
-    <a href="/login" id="profile" class="profile-link">
+    <button class="profile-link" on:click={handleProfile}>
         <i class="fas fa-user-circle" style="font-size: 30px;"></i>
-    </a>
+    </button>
+    <button class="login-button" on:click={handleLogin}>
+        <i class="fas fa-sign-in-alt"></i> Login
+    </button>
 
 </div>
 
@@ -63,7 +81,6 @@
         <a href="/hotel" id="hotel"><i class="fas fa-hotel"></i> Hotels</a>
         <a href="/restaurant" id="restaurant"><i class="fas fa-utensils"></i> Restaurants</a>
         <a href="/landmark" id="landmark"><i class="fas fa-landmark"></i> Landmarks</a>
-        <a href="/transportation" id="transportation"><i class="fas fa-plane"></i> Flights</a>
     </div>
 </nav>
 
@@ -258,6 +275,28 @@
     .dropdown:hover, #calendar:hover {
         background-color: #f1f1f1;
         border-radius: 20px;
+    }
+
+    .login-button {
+        margin-left: 1rem;
+        padding: 0.5rem 1rem;
+        background-color: #26796c;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .login-button:hover {
+        background-color: #1b5d50;
+    }
+
+    .profile-link, .favorite-link {
+        text-decoration: none;
+        color: black;
+        margin-left: auto;
     }
 
     #calendar {

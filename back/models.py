@@ -2,7 +2,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 from sqlmodel import Field, SQLModel, Relationship
 from datetime import date
-import random,string
+import random, string
 
 # Many-to-Many relationship table linking Users and Groups
 class UserGroupLink(SQLModel, table=True):
@@ -35,6 +35,7 @@ class UserDB(SQLModel, table=True):
     # Relationship with groups
     groups: List["GroupDB"] = Relationship(back_populates="users", link_model=UserGroupLink)
     favorites: List["FavoriteDB"] = Relationship(back_populates="user")
+    trip_places: List["TripPlaceDB"] = Relationship(back_populates="user")
 
 # Base model for group input
 class GroupBase(BaseModel):
@@ -73,21 +74,20 @@ class GroupDB(SQLModel, table=True):
     
 class JoinGroupRequest(BaseModel):
     invite_code: str
-    
-#------------------ Restaurants ---------------------
 
-# Class สำหรับเก็บข้อมูลร้านอาหาร
+#--------------------- Restaurants ------------------------
+
 class Restaurant(BaseModel):
-    title: str  # ชื่อร้าน
-    slug: str  # slug หรือ URL-friendly identifier
-    image: str  # รูปภาพของร้าน
-    rating: float  # คะแนนรีวิว
-    reviews: int  # จำนวนรีวิว
-    price: int  # ราคาโดยประมาณ
-    cancellation: Optional[str] = None  # ข้อความการยกเลิก
-    city: str  # เมืองที่ตั้งร้าน
-    content: str  # รายละเอียดเกี่ยวกับร้าน
-    type: str  # ประเภทของร้าน (Restaurant)
+    title: str  
+    slug: str  
+    image: str  
+    rating: float  
+    reviews: int  
+    price: int  
+    cancellation: Optional[str] = None 
+    city: str  
+    content: str  
+    type: str  
 
 # Output ที่ใช้ในการแสดงผล
 class RestaurantOut(Restaurant):
@@ -109,6 +109,7 @@ class RestaurantDB(SQLModel, table=True):
 
     # สามารถเพิ่มฟิลด์อื่นๆ เช่น favorites หากจำเป็น
     favorites: List["FavoriteDB"] = Relationship(back_populates="restaurant")
+    trip_places: List["TripPlaceDB"] = Relationship(back_populates="restaurant")
 
 # Response สำหรับการอัพเดต
 class UpdateResponse(BaseModel):
@@ -148,15 +149,17 @@ class HotelDB(SQLModel, table=True):
     city: str  # เมืองที่ตั้งโรงแรม
     content: str  # รายละเอียดเกี่ยวกับโรงแรม
     type: str = "Hotel"  # ประเภทของสถานที่ (Hotel)
-    
 
     # สามารถเพิ่มฟิลด์อื่นๆ เช่น favorites หากจำเป็น
     favorites: List["FavoriteDB"] = Relationship(back_populates="hotel")
+    trip_places: List["TripPlaceDB"] = Relationship(back_populates="hotel")
 
 # Response สำหรับการอัพเดต
 class UpdateResponse(BaseModel):
     message: str
     hotel: Optional[Hotel] = None
+
+
 
 #---------------------- Landmarks ------------------------
 
@@ -193,6 +196,7 @@ class LandmarkDB(SQLModel, table=True):
 
     # สามารถเพิ่มฟิลด์อื่นๆ เช่น favorites หากจำเป็น
     favorites: List["FavoriteDB"] = Relationship(back_populates="landmark")
+    trip_places: List["TripPlaceDB"] = Relationship(back_populates="landmark")
 
 # Response สำหรับการอัพเดต
 class UpdateResponse(BaseModel):
@@ -201,80 +205,37 @@ class UpdateResponse(BaseModel):
 
 # ---------------Trip ---------------------
 
-# Association Table for Trip Details
-class TripDetailDB(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    trip_id: int = Field(foreign_key="tripdb.id")
-    hotel_id: Optional[int] = Field(default=None, foreign_key="hoteldb.id")
-    restaurant_id: Optional[int] = Field(default=None, foreign_key="restaurantdb.id")
-    landmark_id: Optional[int] = Field(default=None, foreign_key="landmarkdb.id")
-
-    # Relationships to each entity
-    trip: "TripDB" = Relationship(back_populates="trip_details")
-    hotel: Optional["HotelDB"] = Relationship()
-    restaurant: Optional["RestaurantDB"] = Relationship()
-    landmark: Optional["LandmarkDB"] = Relationship()
-
 class Trip(BaseModel):
     name: str
     destination: str
     start: date
     end: date
-    group_id: int  
- 
+    group_id: int
+
 class TripDB(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     destination: str
     start: date
     end: date
-    group_id: int = Field(foreign_key="groupdb.id")  
-    group: Optional["GroupDB"] = Relationship(back_populates="trips")  
-    trip_details: List[TripDetailDB] = Relationship(back_populates="trip")
- 
+    group_id: int = Field(foreign_key="groupdb.id")
+    group: Optional["GroupDB"] = Relationship(back_populates="trips")
+
+    trip_places: List["TripPlaceDB"] = Relationship(back_populates="trip")
+
     def duration(self) -> int:
         return (self.end - self.start).days + 1
- 
+
     def countdown(self) -> int:
         today = date.today()
         return max(0, (self.start - today).days)
- 
+
 class TripOut(Trip):
     id: int
     duration: int
     countdown: int
 
-class TripOut(BaseModel):
-    id: int
-    name: str
-    destination: str
-    start: date
-    end: date
-    group_id: int
-    duration: int
-    countdown: int
-    hotels: Optional[List[HotelOut]] = None
 
-    class Config:
-        from_attributes = True
-
-# Input Model for Adding Trip Details
-class TripDetail(BaseModel):
-    trip_id: int
-    hotel_ids: Optional[List[int]] = None
-    restaurant_ids: Optional[List[int]] = None
-    landmark_ids: Optional[List[int]] = None
-
-# Output Model for Trip Details
-class TripDetailOut(BaseModel):
-    id: int
-    trip_id: int
-    hotels: Optional[List[HotelOut]] = None
-    restaurants: Optional[List[RestaurantOut]] = None
-    landmarks: Optional[List[LandmarkOut]] = None
-
-
-    
 #------------- Avalible -------------
 
 class Availability(BaseModel):
@@ -291,17 +252,19 @@ class AvailableDB(SQLModel, table=True):
     group_id: int = Field(foreign_key="groupdb.id")  # Reference to the GroupDB table
     date: date
 
+# ----------------------- Favorite ----------------------------
+
 class Favorite(BaseModel):
     user_id: int
     landmark_id: Optional[int] = None
     hotel_id: Optional[int] = None
     restaurant_id: Optional[int] = None
 
-# Output model that includes an ID
+
 class FavoriteOut(Favorite):
     id: int
 
-# SQLModel for database representation
+
 class FavoriteDB(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="userdb.id")
@@ -309,8 +272,35 @@ class FavoriteDB(SQLModel, table=True):
     hotel_id: Optional[int] = Field(default=None, foreign_key="hoteldb.id")
     restaurant_id: Optional[int] = Field(default=None, foreign_key="restaurantdb.id")
 
-    user: UserDB = Relationship(back_populates="favorites")
+    user: "UserDB" = Relationship(back_populates="favorites")
     landmark: Optional["LandmarkDB"] = Relationship(back_populates="favorites")
     hotel: Optional["HotelDB"] = Relationship(back_populates="favorites")
-    restaurant: Optional["RestaurantDB"] = Relationship(back_populates="favorites") 
+    restaurant: Optional["RestaurantDB"] = Relationship(back_populates="favorites")
 
+# -----------------------Trip place ---------------------------
+
+class TripPlace(BaseModel):
+    user_id: int
+    landmark_id: Optional[int] = None
+    hotel_id: Optional[int] = None
+    restaurant_id: Optional[int] = None
+
+# Pydantic model for output (showing added trip places)
+class TripPlaceOut(TripPlace):
+    id: int
+
+# SQLAlchemy model for storing trip places in the database
+class TripPlaceDB(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="userdb.id")
+    landmark_id: Optional[int] = Field(default=None, foreign_key="landmarkdb.id")
+    hotel_id: Optional[int] = Field(default=None, foreign_key="hoteldb.id")
+    restaurant_id: Optional[int] = Field(default=None, foreign_key="restaurantdb.id")
+    trip_id: Optional[int] = Field(default=None, foreign_key="tripdb.id")
+    
+
+    user: "UserDB" = Relationship(back_populates="trip_places")
+    landmark: Optional["LandmarkDB"] = Relationship(back_populates="trip_places")
+    hotel: Optional["HotelDB"] = Relationship(back_populates="trip_places")
+    restaurant: Optional["RestaurantDB"] = Relationship(back_populates="trip_places")
+    trip: "TripDB" = Relationship(back_populates="trip_places")

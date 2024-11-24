@@ -3,19 +3,23 @@
     import { token } from '$lib/stores/auth';
     import { createEventDispatcher } from 'svelte';
 
+    const dispatch = createEventDispatcher();
+
     export let item;
     let trips = [];
+
     let selectedTrip = null;
     let showModal = false;
     let loading = false;
     let error = null;
+    let isItemAdded = false; // To check if the item is already added to the trip
 
-    const dispatch = createEventDispatcher();
-
+    // Fetch trips on mount
     onMount(async () => {
         await fetchTrips();
     });
 
+    // Fetch trips from the API
     async function fetchTrips() {
         try {
             const response = await fetch('/api/trips/', {
@@ -27,6 +31,10 @@
 
             if (response.ok) {
                 trips = await response.json();
+                // Check if item is already in any trip
+                trips.forEach(trip => {
+                    trip.isItemAdded = trip.items?.some(tripItem => tripItem.id === item.id);
+                });
                 console.log('Fetched trips:', trips);
             } else {
                 error = `Failed to fetch trips: ${response.status}`;
@@ -37,65 +45,92 @@
         }
     }
 
-    async function addToTrip() {
+    // Toggle the item in the trip (add/remove)
+    async function toggleTripItem() {
         if (!selectedTrip) return;
 
         loading = true;
         error = null;
 
         try {
-            const response = await fetch(
-                `/api/trips/${selectedTrip}/add_item?hotel_id=${item.id}`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${$token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            const selectedTripObj = trips.find(trip => trip.id === selectedTrip);
+            const alreadyAdded = selectedTripObj?.isItemAdded;
+
+            // Define the URL and method based on whether the item is already added
+            const url = `/api/trips/${selectedTrip}/places`;
+            const method = alreadyAdded ? 'DELETE' : 'POST';
+
+            // Make the request to add or remove the item
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    'Authorization': `Bearer ${$token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: item.id,
+                    type: item.type
+                })
+            });
 
             if (response.ok) {
-                const result = await response.json();
-                showModal = false;
-                dispatch('itemAdded', { 
-                    tripId: selectedTrip,
-                    item: item
-                });
-                // Refresh trips list
+                // Refresh trips after the action
                 await fetchTrips();
+                dispatch('itemUpdated', {
+                    tripId: selectedTrip,
+                    item,
+                    action: alreadyAdded ? 'removed' : 'added'
+                });
             } else {
                 const errorData = await response.json();
-                error = errorData.detail || 'Failed to add hotel to trip';
+                error = errorData.detail || `Failed to ${alreadyAdded ? 'remove' : 'add'} item to trip`;
             }
         } catch (err) {
-            error = 'Error adding hotel to trip';
+            error = `Error ${alreadyAdded ? 'removing' : 'adding'} item to trip`;
             console.error('Error:', err);
         } finally {
             loading = false;
         }
     }
+
+    // Close the modal
+    function closeModal() {
+        showModal = false;
+    }
+
+    // Open the modal to choose a trip
+    function openModal() {
+        showModal = true;
+    }
 </script>
 
-<button on:click={() => showModal = true} class="add-trip-btn">
-    Add To Trip
+<!-- Button to open modal -->
+<button on:click={openModal} class="add-trip-btn">
+    Add to Trip
 </button>
 
+<!-- Modal to select trip -->
 {#if showModal}
-    <div class="modal" on:click|self={() => showModal = false}>
+    <div class="modal" on:click|self={closeModal}>
         <div class="modal-content">
             <h2>Select a Trip</h2>
-            
+
             {#if error}
                 <div class="error-message">{error}</div>
             {/if}
-            
+
             <div class="select-wrapper">
                 <select bind:value={selectedTrip} class="input" disabled={loading}>
                     <option value={null}>Choose a trip...</option>
                     {#each trips as trip}
-                        <option value={trip.id}>
+                        <option 
+                            value={trip.id}
+                            class:selected={trip.id === selectedTrip}
+                        >
                             {trip.name} - {trip.destination}
+                            {#if trip.isItemAdded}
+                                (Already Added)
+                            {/if}
                         </option>
                     {/each}
                 </select>
@@ -103,27 +138,30 @@
 
             <div class="button-group">
                 <button 
-                    on:click={() => showModal = false} 
+                    on:click={closeModal} 
                     class="cancel-btn"
                     disabled={loading}
                 >
                     Cancel
                 </button>
                 <button 
-                    on:click={addToTrip} 
+                    on:click={toggleTripItem} 
                     disabled={!selectedTrip || loading} 
                     class="button"
                 >
-                    {loading ? 'Adding...' : 'Add'}
+                    {loading 
+                        ? 'Processing...' 
+                        : trips.find(trip => trip.id === selectedTrip)?.isItemAdded
+                            ? 'Remove from Trip'
+                            : 'Add to Trip'}
                 </button>
             </div>
         </div>
     </div>
 {/if}
 
-
 <style>
-     .modal {
+    .modal {
         position: fixed;
         top: 0;
         left: 0;
@@ -228,5 +266,14 @@
         background-color: #fef2f2;
         border-radius: 4px;
     }
-    
+
+    .input option.selected {
+        background-color: #f0f4f1;
+        color: #26796c;
+    }
+
+    .input option:checked {
+        background-color: #e0f7f3;
+        color: #1f665b;
+    }
 </style>
